@@ -90,22 +90,22 @@ class BNv0:
         adj_g[-1]=np.sum(self.xhats[-1]*self.deltas[-1],0)
         u_shift=self.us[-2]-np.mean(self.us[-2],0)
         t3=np.dot(u_shift.T,self.deltas[-1])
-        t1=np.sum(self.deltas[-1]*self.xhats[-1],0)
-        t2=np.dot(self.us[-2].T,self.xhats[-1])/self.batchsize
+        t1=np.mean(self.deltas[-1]*self.xhats[-1],0)
+        t2=np.dot(self.us[-2].T,self.xhats[-1])
         adj_w[-1]=(t3-t2*t1)*coeff[-1]
         
         for l in np.arange(2,len(self.layers)):
             delta_shift=(self.deltas[-l+1]-np.mean(self.deltas[-l+1],0)-\
                          self.xhats[-l+1]*\
-                         np.sum(self.deltas[-l+1]*self.xhats[-l+1],0))*coeff[-l+1]
+                         np.mean(self.deltas[-l+1]*self.xhats[-l+1],0))*coeff[-l+1]
             self.deltas[-l]=sigmoid(self.ys[-l])*(1.-sigmoid(self.ys[-l]))*\
                         np.dot(delta_shift,self.weights[-l+1].T)
             adj_b[-l]=np.sum(self.deltas[-l])
             adj_g[-l]=np.sum(self.deltas[-l]*self.xhats[-l],0)
             u_shift=self.us[-l-1]-np.mean(self.us[-l-1],0)
             t3=np.dot(u_shift.T,self.deltas[-l])
-            t1=np.sum(self.deltas[-l]*self.xhats[-l],0)
-            t2=np.dot(self.us[-l-1].T,self.xhats[-l])/self.batchsize
+            t1=np.mean(self.deltas[-l]*self.xhats[-l],0)
+            t2=np.dot(self.us[-l-1].T,self.xhats[-l])
             adj_w[-l]=(t3-t2*t1)*coeff[-l]
 
         return adj_w,adj_b,adj_g
