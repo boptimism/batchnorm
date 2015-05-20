@@ -1,0 +1,3 @@
+# batchnorm
+Batch Normalization
+Explore the benefits of Batch Normalization. How is works, why it works, etc...
