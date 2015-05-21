@@ -6,14 +6,10 @@ import network_baseline as bl
 import numpy as np
 import matplotlib.pyplot as plt
 import cPickle as pkl
-import get_code_ver as codever
-import dbutils as mdb
-import mysql.connector as db
+import sys
 
 if __name__=="__main__":
 
-    con=db.connect(host='erlichfs',user='bo',password='mayr2000',database='ann')
-    
     t_img,t_label=dl.training_load()
     s_img,s_label=dl.test_load()
 
@@ -41,31 +37,16 @@ if __name__=="__main__":
     test_check=True
     train_check=False
 
-    #------------------------------------------
-    # Save to DB
-    rec_runs={'neural_network_type':'baseline',
-              'layers':str(layers),
-              'database':'MNIST',
-              'learning_rate_i':0.0,
-              'learning_rate':learnrate,
-              'batch_size':batchsize,
-              'total_epochs':epochs,
-              'train_size':num_of_trains,
-              'test_size':num_of_tests,
-              'code_file':'baseline.py',
-              'code_version':codever.git_version()}
-
-
-    t=saveToDB(con,'ann.runs',rec_runs)
-    t.join()
-
+    dbrec=bool(sys.argv[1])
     
-    network=bl.Baseline(layers,learnrate,batchsize,epochs,weights,bias)
+    network=bl.Baseline(layers,learnrate,batchsize,epochs,num_of_trains,num_of_tests,
+                        weights,bias,dbrec=dbrec)
 
-    network.sgd(train_input,train_label,test_input,test_label,con,
+    network.sgd(train_input,train_label,test_input,test_label,
                 test_check=test_check,train_check=train_check)
 
     con.close()
+
     #------------------------------------------
     if test_check:
         test_accu=np.array(network.test_accu)

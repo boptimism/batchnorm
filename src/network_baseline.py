@@ -1,13 +1,15 @@
 import numpy as np
 import time
-import mysql.connector as sqlconn
-import dbutils as mdb
 import scipy.stats as sstats
 import cPickle as pkl
+import mysql.connector as sqlconn
+import dbutils 
+import get_code_ver as codever
 
 class Baseline:
-    def __init__(self,layers,learnrate,batchsize,epochs,weights,bias):
-
+    def __init__(self,layers,learnrate,batchsize,epochs,num_trains,num_tests,
+                 weights,bias,dbrec=False):
+        
         self.layers=layers
         self.learnrate=learnrate
         self.batchsize=batchsize
@@ -23,18 +25,31 @@ class Baseline:
         self.test_cost=[]
         self.train_accu=[]
         self.train_cost=[]
-        
+        self.dbrec=dbrec
+        #------------------------------------------
+        # Save to DB
+        if dbrec:
+            self.con=sqlconn.connect(host='erlichfs',user='bo',password='mayr2000',database='ann')
 
-        saveToDB()
-        self.runid = db.lastInsertID(con)
+            rec_runs={'neural_network_type':'baseline',
+                      'layers':str(self.layers),
+                      'database':'MNIST',
+                      'learning_rate_i':0.0,
+                      'learning_rate':self.learnrate,
+                      'batch_size':self.batchsize,
+                      'total_epochs':self.epochs,
+                      'train_size':num_trains,
+                      'test_size':num_tests,
+                      'code_file':'baseline.py',
+                      'code_version':codever.git_version()}
+            
+            dbutils.saveToDB(self.con,'ann.runs',rec_runs)
+            self.runid = dbutils.lastInsertID(self.con)
         
+            
     def sgd(self,train_inputs,train_labels,test_inputs,test_labels,
-            con,test_check=True,train_check=False):
+            test_check=True,train_check=False):
 
-        if type(sqlconn.connect()) is not type(con):
-            print 'A connector to SQL is required for SGD recording.'
-            exit(1)
-        
         num_of_trains=len(train_labels)
         batch_per_epoch=num_of_trains/self.batchsize
         idx_epoch=np.arange(num_of_trains)
@@ -42,12 +57,10 @@ class Baseline:
         for p in np.arange(self.epochs):
 
             # SQL--------------------------------------
-            rec_epochs={'num':p,'runid':self.runid}
-            t_ep=mdb.saveToDB(con,'ann.epochs',rec_epochs)
-            
-            cur=con.cursor()
-            cur.execute('select last_insert_id()')
-            epochid = cur.fetchone()[0]
+            if self.dbrec:
+                rec_epochs={'num':int(p),'runid':self.runid}
+                dbutils.saveToDB(self.con,'ann.epochs',rec_epochs)
+                epochid = dbutils.lastInsertID(self.con)
 
             tstart=time.clock()
             np.random.shuffle(idx_epoch)
@@ -68,56 +81,56 @@ class Baseline:
 
                 te=time.clock()
 
-                w_mu=[np.mean(self.weights[i-1],0) for i,x in enumerate(self.layers)]
-                w_sig=[np.std(self.weights[i-1],0) for i,x in enumerate(self.layers)]
-                b_mu=[np.mean(self.bias[i-1]) for i,x in enumerate(self.layers)]
-                b_sig=[np.std(self.bias[i-1]) for i,x in enumerate(self.layers)]
-                err_mu=[np.mean(delta_s,0) for delta_s in self.deltas]
-                err_sig=[np.std(delta_s,0) for delta_s in self.deltas]
-                err_skew=[sstats.skew(delta_s,0) for delta_s in self.deltas]
-                err_kurtosis=[sstats.kurtosis(delta_s,0) for delta_s in self.deltas]
-                act_mu=[np.mean(u_s,0) for u_s in self.us]
-                act_sig=[np.std(u_s,0) for u_s in self.us]
-                act_skew=[sstats.skew(u_s,0) for u_s in self.us]
-                act_kurtosis=[sstats.kurtosis(u_s,0) for u_s in self.us]
+                if self.dbrec:
                 
-                rec_batches={'mbid':q,
-                             'epochid':epochid,
-                             'runtime':te-ts,
-                             'num_of_batches':batch_per_epoch,
-                             'W_mu':pkl.dumps(w_mu),
-                             'W_sig':pkl.dumps(w_sig),
-                             'bias_mu':pkl.dumps(b_mu),
-                             'bias_sig':pkl.dumps(b_sig),
-                             'error_mu':pkl.dumps(err_mu),
-                             'error_sig':pkl.dumps(err_sig),
-                             'error_skew':pkl.dumps(err_skew),
-                             'error_kurtosis':pkl.dumps(err_kurtosis),
-                             'activation_mu':pkl.dumps(act_mu),
-                             'activation_sig':pkl.dumps(act_sig),
-                             'activation_skew':pkl.dumps(act_skew),
-                             'activation_kurtosis':pkl.dumps(act_kurtosis)}
-                try:
-                    t_batch=mdb.saveToDB(con,'ann.minibatches',rec_batches)
-                except con.Error as e:
-                    print "Error code:", e.errno        # error number
-                    print "SQLSTATE value:", e.sqlstate # SQLSTATE value
-                    print "Error message:", e.msg       # error message
-                    print "Error:", e                   # errno, sqlstate, msg values
-                    s = str(e)
-                    print "Error:", s
-                finally:
-                    con.close()
-                    exit(1)
+                    w_mu=[np.mean(self.weights[i-1],0) for i,x in enumerate(self.layers)]
+                    w_sig=[np.std(self.weights[i-1],0) for i,x in enumerate(self.layers)]
+                    b_mu=[np.mean(self.bias[i-1]) for i,x in enumerate(self.layers)]
+                    b_sig=[np.std(self.bias[i-1]) for i,x in enumerate(self.layers)]
+                    err_mu=[np.mean(delta_s,0) for delta_s in self.deltas]
+                    err_sig=[np.std(delta_s,0) for delta_s in self.deltas]
+                    err_skew=[sstats.skew(delta_s,0) for delta_s in self.deltas]
+                    err_kurtosis=[sstats.kurtosis(delta_s,0) for delta_s in self.deltas]
+                    act_mu=[np.mean(u_s,0) for u_s in self.us]
+                    act_sig=[np.std(u_s,0) for u_s in self.us]
+                    act_skew=[sstats.skew(u_s,0) for u_s in self.us]
+                    act_kurtosis=[sstats.kurtosis(u_s,0) for u_s in self.us]
+                
+                    rec_batches={'num':int(q),
+                                 'epochid':epochid,
+                                 'runid':self.runid,
+                                 'runtime':te-ts}
+                    dbutils.saveToDB(self.con,'ann.minibatches',rec_batches)
+                    mbid = dbutils.lastInsertID(self.con)
 
-                rec_mbdata={'mbid':q,
-                            'W':pkl.dumps(self.weights),
-                            'bias':pkl.dumps(self.bias),
-                            'error':pkl.dumps(self.deltas),
-                            'activation':pkl.dumps(self.us)}
+                    rec_params={'W_mu':pkl.dumps(w_mu),
+                                'W_sig':pkl.dumps(w_sig),
+                                'bias_mu':pkl.dumps(b_mu),
+                                'bias_sig':pkl.dumps(b_sig),
+                                'mbid':mbid}
+                    dbutils.saveToDB(self.con,'ann.mbparams',rec_params)
+                    
+                                
+                    rec_samples={'error_mu':pkl.dumps(err_mu),
+                                 'error_sig':pkl.dumps(err_sig),
+                                 'error_skew':pkl.dumps(err_skew),
+                                 'error_kurtosis':pkl.dumps(err_kurtosis),
+                                 'activation_mu':pkl.dumps(act_mu),
+                                 'activation_sig':pkl.dumps(act_sig),
+                                 'activation_skew':pkl.dumps(act_skew),
+                                 'activation_kurtosis':pkl.dumps(act_kurtosis),
+                                 'mbid':mbid}
                 
-                t_mb=mdb.saveToDB(con,'ann.mb_data',rec_mbdata)
-                t_mb.join()
+                    dbutils.saveToDB(self.con,'ann.mbsamples',rec_samples)
+
+                    rec_mbdata={'mbid':mbid,
+                                'W':pkl.dumps(self.weights),
+                                'bias':pkl.dumps(self.bias),
+                                'error':pkl.dumps(self.deltas),
+                                'activation':pkl.dumps(self.us)}
+                
+                    dbutils.saveToDB(self.con,'ann.mb_data',rec_mbdata)
+
                 
             if test_check:
                 accu,cost=self.inference(test_inputs,test_labels)
@@ -133,8 +146,14 @@ class Baseline:
             else:
                 self.train_accu.append(-1.0)
                 self.train_cost.append(-1.0)
+            tend=time.clock()                
+# update_epoch_accuracy`(in id int, in train_acc float, in train_loss float,in test_acc float, in test_loss float, in rt float)
+        
+            sqlstr = 'call update_epoch_accuracy({0},{1},{2},{3},{4},{5})'
+            cur=self.con.cursor()
 
-            tend=time.clock()
+            cur.execute(sqlstr.format(epochid, self.train_accu[-1],self.train_cost[-1],self.test_accu[-1], self.test_cost[-1],tend-tstart))
+
 
             print "Epoch {0} completed. Time:{1}".format(p,tend-tstart)
 
