@@ -1,0 +1,8 @@
+def git_version():
+    from subprocess import Popen, PIPE
+    gitproc = Popen(['git', 'rev-parse','--short','HEAD'], stdout = PIPE)
+    (stdout, _) = gitproc.communicate()
+    print stdout
+    return stdout.strip()
+
+print git_version()
