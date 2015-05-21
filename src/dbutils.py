@@ -1,8 +1,5 @@
-#%%
-from multiprocessing import Process
 from mysql.connector import Error
-# import mysql.connector
-# import pdb;
+import mysql.connector
 
 def getFromDB(con,table,fields,wherestr=''):
 	colstr = ""
@@ -28,7 +25,7 @@ def getFromDB(con,table,fields,wherestr=''):
 def lastInsertID(con):
         cur=con.cursor()
         cur.execute('select last_insert_id()');
-        return cur.fetchone[0]
+        return cur.fetchone()[0]
 
 
 def saveToDB(con,table,mydict):
@@ -59,7 +56,6 @@ def saveToDB(con,table,mydict):
 	if isinstance(mydict,dict):
 		err=insert(cur,table,mydict)
 	else:
-		# pdb.set_trace()
 		try:
 			for d in mydict:
 				err=insert(cur,table,d)
@@ -79,44 +75,44 @@ def saveToDB(con,table,mydict):
 	return err
 
 
-def saveToDB_m(con,table,mydict):
-	p = Process(target=saveToDB_na, args=(con,table,mydict))
-	#t.daemon=True
-	p.start()
-	return p
+# def saveToDB_m(con,table,mydict):
+# 	p = Process(target=saveToDB_na, args=(con,table,mydict))
+# 	#t.daemon=True
+# 	p.start()
+# 	return p
 
 
-#%%
-if __name__ == '__main__':
+# #%%
+# if __name__ == '__main__':
 
-#%%
-	import mysql.connector as db
-	import numpy as np
-#%%
-	con=db.connect(host='erlichfs',user='bo', password='mayr2000',database='ann')
+# #%%
+# 	import mysql.connector as db
+# 	import numpy as np
+# #%%
+# 	con=db.connect(host='erlichfs',user='bo', password='mayr2000',database='ann')
 	
-#%%	
-	ass = int(raw_input('array size? '))
-	comment = raw_input('comment? ')
+# #%%	
+# 	ass = int(raw_input('array size? '))
+# 	comment = raw_input('comment? ')
 
 	
-	w = np.random.rand(ass)
-	wd = w.dumps()
-        #runid=1
-	# t=saveToDB(con,'ann.test2',
-        #            ({'id':runid,'data':wd, 'text':comment},
-        #             {'id':runid+1,'data':1234324, 'text':'foo'}))	
-	t=saveToDB(con,'ann.test2',
-                   ({'data':wd},
-                    {'text':'foo'}))	
-	t.join()    
-	# We don't want to kill the mysql connection until all the threads are done!
-	con.close()
+# 	w = np.random.rand(ass)
+# 	wd = w.dumps()
+#         #runid=1
+# 	# t=saveToDB(con,'ann.test2',
+#         #            ({'id':runid,'data':wd, 'text':comment},
+#         #             {'id':runid+1,'data':1234324, 'text':'foo'}))	
+# 	t=saveToDB(con,'ann.test2',
+#                    ({'data':wd},
+#                     {'text':'foo'}))	
+# 	t.join()    
+# 	# We don't want to kill the mysql connection until all the threads are done!
+# 	con.close()
 	
-	#print 'dict saved'
-	#
-	#saveToDB(con,'ann.test2',[{'data':wd},{'data':wm}])
-	#print 'tuple of dicts saved'
+# 	#print 'dict saved'
+# 	#
+# 	#saveToDB(con,'ann.test2',[{'data':wd},{'data':wm}])
+# 	#print 'tuple of dicts saved'
 	
 	
-	#%%
+# 	#%%
