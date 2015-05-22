@@ -1,8 +1,8 @@
 # Batch Normalization
 Folders:
-MNIST ----- Store MNIST database
-src   ----- source file
-results --- where the results are dumped
+* MNIST ----- Store MNIST database
+* src   ----- source file
+* results --- where the results are dumped
 
 Algorithm Documentation:
 algo.pdf
@@ -26,11 +26,11 @@ python baseline.py 1 or python bn_v0.py or python bn_v1.py
 The output is the accuracy and loss of the test set as number of epochs increases
 
 The default setup for network is:
-1. layers: [784,100,100,100,10]
-2. learning rate: 0.1
-3. minibatch size: 60
-4. epochs: 50
-5. weights/bias/gammas are initialized as random numbers following Gaussian distr.
+* layers: [784,100,100,100,10]
+* learning rate: 0.1
+* minibatch size: 60
+* epochs: 50
+* weights/bias/gammas are initialized as random numbers following Gaussian distr.
 
 For Batch Normalization, the inference is done via true population averge rather than moving average. E.g. after each epoch, the network parameters are frozen, feedforward is carried out in order to obtain the means and variance of W*U. Default setting uses 3 epochs and mini-batches of size 60 to obtain the population means and variances. These quantities are then used to infer the test set.
 
