@@ -37,15 +37,13 @@ if __name__=="__main__":
     test_check=True
     train_check=False
 
-    dbrec=bool(sys.argv[1])
+    dbrec=bool(int(sys.argv[1]))
     
     network=bl.Baseline(layers,learnrate,batchsize,epochs,num_of_trains,num_of_tests,
                         weights,bias,dbrec=dbrec)
 
     network.sgd(train_input,train_label,test_input,test_label,
                 test_check=test_check,train_check=train_check)
-
-    con.close()
 
     #------------------------------------------
     if test_check:

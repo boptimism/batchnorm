@@ -28,8 +28,10 @@ class Baseline:
         self.dbrec=dbrec
         #------------------------------------------
         # Save to DB
-        if dbrec:
-            self.con=sqlconn.connect(host='erlichfs',user='bo',password='mayr2000',database='ann')
+        if self.dbrec:
+            self.con=sqlconn.connect(host='erlichfs',
+                                     user='bo',password='mayr2000',
+                                     database='ann')
 
             rec_runs={'neural_network_type':'baseline',
                       'layers':str(self.layers),
@@ -146,17 +148,21 @@ class Baseline:
             else:
                 self.train_accu.append(-1.0)
                 self.train_cost.append(-1.0)
-            tend=time.clock()                
-# update_epoch_accuracy`(in id int, in train_acc float, in train_loss float,in test_acc float, in test_loss float, in rt float)
-        
-            sqlstr = 'call update_epoch_accuracy({0},{1},{2},{3},{4},{5})'
-            cur=self.con.cursor()
+            tend=time.clock()
+            
+            if self.dbrec:
+                sqlstr = 'call update_epoch_accuracy({0},{1},{2},{3},{4},{5})'
+                cur=self.con.cursor()
 
-            cur.execute(sqlstr.format(epochid, self.train_accu[-1],self.train_cost[-1],self.test_accu[-1], self.test_cost[-1],tend-tstart))
+                cur.execute(sqlstr.format(epochid, self.train_accu[-1],
+                                          self.train_cost[-1],self.test_accu[-1],
+                                          self.test_cost[-1],tend-tstart))
 
 
             print "Epoch {0} completed. Time:{1}".format(p,tend-tstart)
-
+            
+        if self.dbrec:
+            self.con.close()
             
 
     def feedforward(self,batch_data):

@@ -20,7 +20,7 @@ There are three versions of neural network.
 In this code, the inference is done via true population averge rather than moving average. E.g. after each epoch, the network parameters are frozen, feedforward is carried out in order to obtain the means and variance of WU. Default setting uses 3 epochs and mini-batches of size 60 to obtain the population means and variances. These quantities are then used to infer the test set.
 * bn_v1.py: Simplified Batch Normalization
 The simplified BN only centers X=WU. It doesn't divide X by the standard deivation of WU.
-So far only *baseline.py* take 1 command line argument, a boolen or integer to indicate whether written to mySQL data base is desired. Default is FALSE. SQL will be added to other python files soon.
+So far only *baseline.py* take 1 command line argument to indicate whether written to mySQL data base is desired: 0 (no SQL) or 1 (SQL) Default is FALSE. SQL will be added to other python files soon.
 
 One needs *cPickle,numpy,scipy,mySQL.connector* to run the code. To run it:
 ```
