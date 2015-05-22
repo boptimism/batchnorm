@@ -29,9 +29,22 @@ class Baseline:
         self.dbrec=dbrec
         self.dbdict={'host':'erlichfs', 'user':'bo', 'password':'mayr2000','database':'ann'}
         if dbrec:
-            self.pool = sqlconn.pooling.MySQLConnectionPool(pool_name = "mypool",
-                                                      pool_size = 20,
+            self.pool[0] = sqlconn.pooling.MySQLConnectionPool(pool_name = "mypool0",
+                                                      pool_size = 32,
                                                       **self.dbdict)
+            self.pool[1] = sqlconn.pooling.MySQLConnectionPool(pool_name = "mypool1",
+                                                      pool_size = 32,
+                                                      **self.dbdict)
+            self.pool[2] = sqlconn.pooling.MySQLConnectionPool(pool_name = "mypool2",
+                                                      pool_size = 32,
+                                                      **self.dbdict)
+            self.pool[3] = sqlconn.pooling.MySQLConnectionPool(pool_name = "mypool3",
+                                                      pool_size = 32,
+                                                      **self.dbdict)
+            self.pool[4] = sqlconn.pooling.MySQLConnectionPool(pool_name = "mypool4",
+                                                      pool_size = 32,
+                                                      **self.dbdict)
+
 
 
     
@@ -55,7 +68,14 @@ class Baseline:
             self.runid = dbutils.lastInsertID(self.con)
      
     def connect(self):
-        return self.pool.get_connection()                
+        con = 1
+        while con==1:
+            try:
+                con = self.pool[np.random.randint(5)].get_connection()
+            except:
+                time.sleep(1)
+
+        return con
             
     def sgd(self,train_inputs,train_labels,test_inputs,test_labels,
             test_check=True,train_check=False):
@@ -162,9 +182,9 @@ class Baseline:
         
 
 
-
-            sqlstr = 'call update_epoch_accuracy({0},{1},{2},{3},{4},{5})'           
-            dbutils.execute_m(self.connect(),sqlstr.format(epochid, self.train_accu[-1],self.train_cost[-1],self.test_accu[-1], self.test_cost[-1],tend-tstart))
+            if self.dbrec:
+                sqlstr = 'call update_epoch_accuracy({0},{1},{2},{3},{4},{5})'           
+                dbutils.execute_m(self.connect(),sqlstr.format(epochid, self.train_accu[-1],self.train_cost[-1],self.test_accu[-1], self.test_cost[-1],tend-tstart))
             
 
             print "Epoch {0} completed. Time:{1}".format(p,tend-tstart)

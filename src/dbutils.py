@@ -75,6 +75,7 @@ def saveToDB(con,table,mydict,closeit=False):
 	cur.close()
 	if closeit:
 		con.close()
+		print 'closed connection'
 	return err
 
 def saveToDB_m(con,table,mydict):
@@ -94,6 +95,8 @@ def execute(con,sqlstr,closeit=False):
 
 	if closeit:
 		con.close()
+		print 'closed connection'
+
 
 
 
