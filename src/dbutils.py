@@ -1,5 +1,6 @@
 from mysql.connector import Error
 import mysql.connector
+from multiprocessing import Process
 
 def getFromDB(con,table,fields,wherestr=''):
 	colstr = ""
@@ -28,7 +29,7 @@ def lastInsertID(con):
         return cur.fetchone()[0]
 
 
-def saveToDB(con,table,mydict):
+def saveToDB(con,table,mydict,closeit=False):
 
 	def insert(cur,table,mydict):
 		sqlstr = "insert into " + table
@@ -72,14 +73,39 @@ def saveToDB(con,table,mydict):
 		print 'Error saving to DB'
 
 	cur.close()
+	if closeit:
+		con.close()
+		print 'closed connection'
 	return err
 
+def saveToDB_m(con,table,mydict):
+ 	p = Process(target=saveToDB, args=(con,table,mydict,True))
+ 	p.start()
+ 	return p
 
-# def saveToDB_m(con,table,mydict):
-# 	p = Process(target=saveToDB_na, args=(con,table,mydict))
-# 	#t.daemon=True
-# 	p.start()
-# 	return p
+def execute(con,sqlstr,closeit=False):
+	try:
+		cur=con.cursor()
+		cur.execute(sqlstr)
+		con.commit()
+		cur.close()
+	except: 
+		'put in proper mysql error'
+		con.rollback()
+
+	if closeit:
+		con.close()
+		print 'closed connection'
+
+
+
+
+def execute_m(con,sqlstr):
+	p = Process(target=execute, args=(con,sqlstr,True))
+	p.start()
+
+
+
 
 
 # #%%
