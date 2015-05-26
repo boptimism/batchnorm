@@ -26,19 +26,21 @@ if __name__=="__main__":
     idx_test=np.array(rnd.sample(range(totaltest),numoftests))
 
     layers=[28*28,100,100,100,10]
-    weights=[np.random.randn(x,y)
+    # weights=[np.random.randn(x,y)
+    #         for x,y in zip(layers[:-1],layers[1:])]
+    # bias=[np.random.randn(x) for x in layers[1:]]
+    # bias.insert(0,np.zeros(layers[0]))
+    # gammas=[np.random.randn(x) for x in layers[1:]]
+    # gammas.insert(0,np.ones(layers[0]))
+
+    weights=[np.random.uniform(-1./np.sqrt(x),1./np.sqrt(x),[x,y])
             for x,y in zip(layers[:-1],layers[1:])]
     bias=[np.random.randn(x) for x in layers[1:]]
+    #bias=[np.zeros(x) for x in layers[1:]]
     bias.insert(0,np.zeros(layers[0]))
     gammas=[np.random.randn(x) for x in layers[1:]]
+    #gammas=[np.ones(x) for x in layers[1:]]
     gammas.insert(0,np.ones(layers[0]))
-
-    # weights=[np.random.uniform(-1.,1.,[x,y])
-    #         for x,y in zip(layers[:-1],layers[1:])]
-    # bias=[np.random.uniform(-1.,1.,x) for x in layers[1:]]
-    # bias.insert(0,np.zeros(layers[0]))
-    # gammas=[np.random.uniform(-1.,1.,x) for x in layers[1:]]
-    # gammas.insert(0,np.ones(layers[0]))
     
     data={}
     data['layers']=layers

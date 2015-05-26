@@ -208,18 +208,20 @@ class Baseline:
         if self.dbrec:
             self.con.close()
             
-
     def feedforward(self,batch_data):
         self.us[0]=batch_data
         for l in np.arange(1,len(self.layers)):
             self.ys[l]=np.dot(self.us[l-1],self.weights[l-1])+self.bias[l]
-            self.us[l]=sigmoid(self.ys[l])
+            if l<len(self.layers)-1:
+                self.us[l]=sigmoid(self.ys[l])
+            else:
+                self.us[l]=softmax(self.ys[l])
 
     def bp(self,batch_label):
         adj_w=[np.zeros(w.shape) for w in self.weights]
         adj_b=[np.zeros(b.shape) for b in self.bias]
         
-        self.deltas[-1]=(self.us[-1]-batch_label)/self.batchsize
+        self.deltas[-1]=((self.us[-1].T*np.sum(batch_label,1)).T-batch_label)/self.batchsize
         adj_b[-1]=np.sum(self.deltas[-1],0)
         adj_w[-1]=np.dot(self.us[-2].T,self.deltas[-1])
 
@@ -237,32 +239,29 @@ class Baseline:
             
 
     def inference(self,test_inputs,test_labels):
-        labels=np.array([np.argmax(x) for x in test_labels])
-        labels_inf=[]
-        for sample in test_inputs:
-            us_inf=sample
-            for l in np.arange(1,len(self.layers)):
-                ys_inf=np.dot(us_inf,self.weights[l-1])+self.bias[l]
+        us_inf=test_inputs
+        for l in np.arange(1,len(self.layers)):
+            ys_inf=np.dot(us_inf,self.weights[l-1])+self.bias[l]
+            if l<len(self.layers)-1:
                 us_inf=sigmoid(ys_inf)
-            labels_inf.append(us_inf)
-        # us_inf=[np.zeros()]
-        # res_state=np.array([self.feedforward(x)[-1] for x in test_input])
-        # res_nn=np.array([np.argmax(self.feedforward(x)[-1]) for x in test_input])
-        # #res_nn=np.array([np.argmax(x) for x in res_state])
-        # label=np.array([np.argmax(x) for x in test_label])
-        labels_inf=np.array(labels_inf)
-        cost=costFn(labels_inf,test_labels)
-        labels_inf=[np.argmax(x) for x in labels_inf]
-        hits=sum(labels_inf==labels)*1./len(test_inputs)
+            else:
+                us_inf=softmax(ys_inf)
+        cost=costFn(us_inf,test_labels)
+        label_inf=np.array([np.argmax(s) for s in us_inf])
+        label_giv=np.array([np.argmax(s) for s in test_labels])
+        hits=sum(label_inf==label_giv)*1./len(test_inputs)
+                
         return hits,cost
         
 def costFn(labels_inf,labels):
     p=np.array([x/np.sum(x) for x in labels_inf])
     num_tests=len(labels)
-    return np.sum(-labels*np.nan_to_num(np.log(p))-
-                  (1.-labels)*np.nan_to_num(np.log(1.-p)))/num_tests
+    return np.sum(-labels*np.nan_to_num(np.log(p)))/num_tests
 
 def sigmoid(x):
-    return 1./(1.+np.exp(-np.clip(x,-100,100)))
+#    return 1./(1.+np.exp(-np.clip(x,-100,100)))
+    return 1./(1.+np.exp(-x))
 
 
+def softmax(x):
+    return (np.exp(x).T/np.sum(np.exp(x),1)).T

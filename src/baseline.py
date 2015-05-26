@@ -55,7 +55,7 @@ if __name__=="__main__":
         xaxis=np.arange(epochs)
 
         fig=plt.figure(1)
-        plt.suptitle('TestSet')
+        plt.suptitle('TestSet,BaseLine')
         plt.subplot(2,1,1)
         plt.plot(xaxis,test_accu,'r-o')
         plt.grid()

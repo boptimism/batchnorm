@@ -1,5 +1,7 @@
 """
 BN-V0
+Last layer: Softmax
+Loss Func: Cross-Entropy with 1 term: C=-Sum[Label*Log(Output)]
 """
 import numpy as np
 import time
@@ -76,7 +78,11 @@ class BNv0:
             self.xhats[l]=(wu-np.mean(wu,0))/(np.std(wu,0)+eps)
             self.stds[l]=np.std(wu,0)
             self.ys[l]=self.gammas[l]*self.xhats[l]+self.bias[l]
-            self.us[l]=sigmoid(self.ys[l])
+            if l<len(self.layers)-1:
+                self.us[l]=sigmoid(self.ys[l])
+            else:
+                self.us[l]=softmax(self.ys[l])
+            
 
     def bp(self,batch_label):
         eps=1.e-15
@@ -100,7 +106,7 @@ class BNv0:
                          np.mean(self.deltas[-l+1]*self.xhats[-l+1],0))*coeff[-l+1]
             self.deltas[-l]=sigmoid(self.ys[-l])*(1.-sigmoid(self.ys[-l]))*\
                         np.dot(delta_shift,self.weights[-l+1].T)
-            adj_b[-l]=np.sum(self.deltas[-l])
+            adj_b[-l]=np.sum(self.deltas[-l],0)
             adj_g[-l]=np.sum(self.deltas[-l]*self.xhats[-l],0)
             u_shift=self.us[-l-1]-np.mean(self.us[-l-1],0)
             t3=np.dot(u_shift.T,self.deltas[-l])
@@ -139,7 +145,10 @@ class BNv0:
                     self.vars_inf[l]=self.vars_inf[l]+wuvar/(num_of_batches-1)
                     xhats_inf=(wu-wumean)/(np.sqrt(wuvar)+eps)
                     ys_inf=self.gammas[l]*xhats_inf+self.bias[l]
-                    us_inf=sigmoid(ys_inf)
+                    if l<len(self.layers)-1:
+                        us_inf=sigmoid(ys_inf)
+                    else:
+                        us_inf=softmax(ys_inf)
         
     def inference(self,test_inputs,test_labels):
         eps=1.e-15
@@ -165,7 +174,10 @@ class BNv0:
             wu=np.dot(us_inf,self.weights[l-1])
             xhats_inf=(wu-self.means_inf[l])/(np.sqrt(self.vars_inf[l])+eps)
             ys_inf=self.gammas[l]*xhats_inf+self.bias[l]
-            us_inf=sigmoid(ys_inf)
+            if l<len(self.layers)-1:
+                us_inf=sigmoid(ys_inf)
+            else:
+                us_inf=softmax(ys_inf)
         cost=costFn(us_inf,test_labels)
         label_inf=np.array([np.argmax(s) for s in us_inf])
         label_giv=np.array([np.argmax(s) for s in test_labels])
@@ -176,10 +188,12 @@ class BNv0:
 def costFn(labels_inf,labels):
     p=np.array([x/np.sum(x) for x in labels_inf])
     num_tests=len(labels)
-    return np.sum(-labels*np.nan_to_num(np.log(p))-
-                  (1.-labels)*np.nan_to_num(np.log(1.-p)))/num_tests
+    return np.sum(-labels*np.nan_to_num(np.log(p)))/num_tests
 
 def sigmoid(x):
-    return 1./(1.+np.exp(-np.clip(x,-100,100)))
+#    return 1./(1.+np.exp(-np.clip(x,-100,100)))
+    return 1./(1.+np.exp(-x))
 
+def softmax(x):#input is a matrix with dimension n_samples x n_nodes
+    return (np.exp(x).T/np.sum(np.exp(x),1)).T
 
