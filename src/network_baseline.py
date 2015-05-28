@@ -46,9 +46,6 @@ class Baseline:
                                                       pool_size = 32,
                                                       **self.dbdict)
 
-
-
-    
         #------------------------------------------
         # Save to DB
 
@@ -57,7 +54,7 @@ class Baseline:
                                      user='bo',password='mayr2000',
                                      database='ann')
 
-        if dbrec:
+        if self.dbrec:
 
             rec_runs={'neural_network_type':'baseline',
                       'layers':str(self.layers),
@@ -195,16 +192,13 @@ class Baseline:
                                           self.train_cost[-1],self.test_accu[-1],
                                           self.test_cost[-1],tend-tstart))
             tend=time.clock()                
-# update_epoch_accuracy`(in id int, in train_acc float, in train_loss float,in test_acc float, in test_loss float, in rt float)
-        
 
             if self.dbrec:
                 sqlstr = 'call update_epoch_accuracy({0},{1},{2},{3},{4},{5})'           
                 dbutils.execute_m(self.connect(),sqlstr.format(epochid, self.train_accu[-1],self.train_cost[-1],self.test_accu[-1], self.test_cost[-1],tend-tstart))
-            
 
             print "Epoch {0} completed. Time:{1}".format(p,tend-tstart)
-            
+        #close connection once recording is finished.
         if self.dbrec:
             self.con.close()
             
