@@ -47,10 +47,6 @@ class BNv1:
                 batch_label=train_labels[idx_batch]
 
                 self.feedforward(batch_data)
-
-                # num_of_batches=p*batch_per_epoch+q+1
-                # self.moving_means=[(a+b*(num_of_batches-1))/num_of_batches
-                #                    for a,b in zip(self.moving_means,self.means)]
                 
                 dw,db=self.bp(batch_label)
                 
@@ -169,14 +165,10 @@ class BNv1:
         # return hits,cost
         
 def costFn(labels_inf,labels):
-    p=np.array([x/np.sum(x) for x in labels_inf])
-    num_tests=len(labels)
-    return np.sum(-labels*np.nan_to_num(np.log(p)))/num_tests
+    return np.sum(-labels*np.nan_to_num(np.log(labels_inf)))/len(labels)
 
 def sigmoid(x):
-#    return 1./(1.+np.exp(-np.clip(x,-100,100)))
     return 1./(1.+np.exp(-x))
-
 
 def softmax(x):
     return (np.exp(x).T/np.sum(np.exp(x),1)).T

@@ -89,7 +89,7 @@ class BNv0:
         adj_w=[np.zeros(w.shape) for w in self.weights]
         adj_b=[np.zeros(b.shape) for b in self.bias]
         adj_g=[np.zeros(g.shape) for g in self.gammas]
-        coeff=[g/(sigma+eps) for g,sigma in zip(self.gammas,self.stds)]
+        coeff=[g/(sigma+eps) for g,sigma in zip(self.gammas[1:],self.stds[1:])]
         
         self.deltas[-1]=(self.us[-1]-batch_label)/self.batchsize
         adj_b[-1]=np.sum(self.deltas[-1],0)
@@ -142,7 +142,7 @@ class BNv0:
                     wumean=np.mean(wu,0)
                     wuvar=np.var(wu,0)
                     self.means_inf[l]=self.means_inf[l]+wumean/num_of_batches
-                    self.vars_inf[l]=self.vars_inf[l]+wuvar/(num_of_batches-1)
+                    self.vars_inf[l]=self.vars_inf[l]+bs_inf*wuvar/(bs_inf-1)/num_of_batches
                     xhats_inf=(wu-wumean)/(np.sqrt(wuvar)+eps)
                     ys_inf=self.gammas[l]*xhats_inf+self.bias[l]
                     if l<len(self.layers)-1:
@@ -152,23 +152,6 @@ class BNv0:
         
     def inference(self,test_inputs,test_labels):
         eps=1.e-15
-        # sample by sample
-        # labels=np.array([np.argmax(x) for x in test_labels])
-        # labels_inf=[]
-        # for sample in test_inputs:
-        #     us_inf=sample
-        #     for l in np.arange(1,len(self.layers)):
-        #         wu=np.dot(us_inf,self.weights[l-1])
-        #         xhats_inf=(wu-self.means_inf[l])/(np.sqrt(self.vars_inf[l])+eps)
-        #         ys_inf=self.gammas[l]*xhats_inf+self.bias[l]
-        #         us_inf=sigmoid(ys_inf)
-        #     labels_inf.append(us_inf)
-        # labels_inf=np.array(labels_inf)
-        # cost=costFn(labels_inf,test_labels)
-        # labels_inf=[np.argmax(x) for x in labels_inf]
-        # hits=sum(labels_inf==labels)*1./len(test_inputs)
-
-        # whole batch
         us_inf=test_inputs
         for l in np.arange(1,len(self.layers)):
             wu=np.dot(us_inf,self.weights[l-1])
@@ -186,9 +169,7 @@ class BNv0:
         return hits,cost
         
 def costFn(labels_inf,labels):
-    p=np.array([x/np.sum(x) for x in labels_inf])
-    num_tests=len(labels)
-    return np.sum(-labels*np.nan_to_num(np.log(p)))/num_tests
+    return np.sum(-labels*np.nan_to_num(np.log(labels_inf)))/len(labels)
 
 def sigmoid(x):
 #    return 1./(1.+np.exp(-np.clip(x,-100,100)))
