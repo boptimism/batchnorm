@@ -7,10 +7,12 @@ import numpy as np
 import time
 
 class BNv0:
-    def __init__(self,layers,learnrate,batchsize,epochs,weights,bias,gammas):
+    def __init__(self,layers,learnrate,lrate_decay,batchsize,epochs,weights,bias,gammas):
 
         self.layers=layers
         self.learnrate=learnrate
+        self.lrate_decay=lrate_decay
+        
         self.batchsize=batchsize
         self.epochs=epochs
         self.weights=weights
@@ -51,8 +53,8 @@ class BNv0:
                 self.feedforward(batch_data)
                 
                 dw,db,dg=self.bp(batch_label)
-                
-                self.batch_update(dw,db,dg)
+                num_of_batches=p*batch_per_epoch+q+1
+                self.batch_update(dw,db,dg,num_of_batches)
 
             if test_check:
                 bs_inf=60
@@ -116,10 +118,10 @@ class BNv0:
 
         return adj_w,adj_b,adj_g
             
-    def batch_update(self,dw,db,dg):
-        self.weights=[w-self.learnrate*dnw for w,dnw in zip(self.weights,dw)]
-        self.bias=[b-self.learnrate*dnb for b,dnb in zip(self.bias,db)]
-        self.gammas=[g-self.learnrate*dng for g,dng in zip(self.gammas,dg)]
+    def batch_update(self,dw,db,dg,t):
+        self.weights=[w-self.learnrate/(1.+self.lrate_decay*t)*dnw for w,dnw in zip(self.weights,dw)]
+        self.bias=[b-self.learnrate/(1.+self.lrate_decay*t)*dnb for b,dnb in zip(self.bias,db)]
+        self.gammas=[g-self.learnrate/(1.+self.lrate_decay*t)*dng for g,dng in zip(self.gammas,dg)]
     
     def pop_stats(self,train_inputs,ep_inf,bs_inf):
         eps=1.e-15

@@ -17,11 +17,11 @@ if __name__=="__main__":
     t_img,t_label=dl.training_load()
     s_img,s_label=dl.test_load()
 
-    numoftrains=6000
+    numoftrains=60000
     totaltrains=len(t_img[:,0])
     idx_train=np.array(rnd.sample(range(totaltrains),numoftrains))
     
-    numoftests=1000
+    numoftests=10000
     totaltest=len(s_img[:,0])
     idx_test=np.array(rnd.sample(range(totaltest),numoftests))
 
@@ -50,12 +50,14 @@ if __name__=="__main__":
     data['testing_index']=idx_test
     data['gammas']=gammas
 
-    data['learnrate']=5.0
+    data['learnrate']=2.0
     data['batchsize']=60
     data['epochs']=50
 
     data['test_check']=True
     data['train_check']=True
+
+    data['lrate_decay']=0.002
     
     with open('initial_conf.pickle','wb') as fout:
         pkl.dump(data,fout,protocol=-1)

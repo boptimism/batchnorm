@@ -36,16 +36,11 @@ if __name__=="__main__":
     test_check=data['test_check']
     train_check=data['train_check']
     
-    # learnrate=2.5
-    # batchsize=60
-    # epochs=50
-
-    # test_check=True
-    # train_check=False
+    lrate_decay=data['lrate_decay']
 
     dbrec=bool(int(sys.argv[1]))
     
-    network=bl.Baseline(layers,learnrate,batchsize,epochs,num_of_trains,num_of_tests,
+    network=bl.Baseline(layers,learnrate,lrate_decay,batchsize,epochs,num_of_trains,num_of_tests,
                         weights,bias,dbrec=dbrec)
 
     network.sgd(train_input,train_label,test_input,test_label,

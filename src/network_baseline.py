@@ -8,11 +8,13 @@ import get_code_ver as codever
 import multiprocessing
 
 class Baseline:
-    def __init__(self,layers,learnrate,batchsize,epochs,num_trains,num_tests,
+    def __init__(self,layers,learnrate,lrate_decay,batchsize,epochs,num_trains,num_tests,
                  weights,bias,dbrec=False):
         
         self.layers=layers
         self.learnrate=learnrate
+        self.lrate_decay=lrate_decay
+        
         self.batchsize=batchsize
         self.epochs=epochs
         self.weights=weights
@@ -114,8 +116,8 @@ class Baseline:
                 self.feedforward(batch_data)
 
                 dw,db=self.bp(batch_label)
-                
-                self.batch_update(dw,db)
+                num_of_batches=p*batch_per_epoch+q+1
+                self.batch_update(dw,db,num_of_batches)
 
                 te=time.clock()
 
@@ -233,9 +235,9 @@ class Baseline:
 
         return adj_w,adj_b
             
-    def batch_update(self,dw,db):
-        self.weights=[w-self.learnrate*dnw for w,dnw in zip(self.weights,dw)]
-        self.bias=[b-self.learnrate*dnb for b,dnb in zip(self.bias,db)]
+    def batch_update(self,dw,db,t):
+        self.weights=[w-self.learnrate/(1.+self.lrate_decay*t)*dnw for w,dnw in zip(self.weights,dw)]
+        self.bias=[b-self.learnrate/(1.+self.lrate_decay*t)*dnb for b,dnb in zip(self.bias,db)]
             
 
     def inference(self,test_inputs,test_labels):

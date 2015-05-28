@@ -30,6 +30,8 @@ if __name__=="__main__":
     num_of_tests=len(test_input)
     
     learnrate=data['learnrate']
+    lrate_decay=data['lrate_decay']
+    
     batchsize=data['batchsize']
     epochs=data['epochs']
     test_check=data['test_check']
@@ -42,7 +44,7 @@ if __name__=="__main__":
     # test_check=True
     # train_check=False
     
-    network=bnv1.BNv1(layers,learnrate,batchsize,epochs,weights,bias)
+    network=bnv1.BNv1(layers,learnrate,lrate_decay,batchsize,epochs,weights,bias)
 
     network.sgd(train_input,train_label,test_input,test_label,
                 test_check=test_check,train_check=train_check)
