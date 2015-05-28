@@ -29,9 +29,12 @@ if __name__=='__main__':
     # print "Baseline: ",bl_data['learnrate']
     # print "Baseline: ",bn_v0_data['learnrate']
     # print "Baseline: ",bn_v1_data['learnrate']
-    
+
+    lrate=2.0
+    lrate_decay=0.002
     fig=plt.figure()
-    plt.suptitle('learning rate:{0}'.format(bl_data['learnrate']))
+    
+    plt.suptitle('learning decay:{0}/(1+{1}*t)'.format(lrate,lrate_decay))
     plt.subplot(221)
     plt.plot(bl_test_accu,'g-o',bnv0_test_accu,'r-o',bnv1_test_accu,'b-o')
     plt.legend(['Baseline','BN','BN-V1'],loc='lower right')
