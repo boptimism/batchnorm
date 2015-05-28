@@ -45,7 +45,6 @@ class Baseline:
             self.pool[4] = sqlconn.pooling.MySQLConnectionPool(pool_name = "mypool4",
                                                       pool_size = 32,
                                                       **self.dbdict)
-
         #------------------------------------------
         # Save to DB
 
@@ -67,19 +66,20 @@ class Baseline:
                       'test_size':num_tests,
                       'code_file':'baseline.py',
                       'code_version':codever.git_version()}
-            self.con=self.connect()
+            #self.con=self.connect()
             dbutils.saveToDB(self.con,'ann.runs',rec_runs)
             self.runid = dbutils.lastInsertID(self.con)
      
     def connect(self):
+        return self.con
         con = 1
-        while con==1:
-            try:
-                con = self.pool[np.random.randint(5)].get_connection()
-            except:
-                time.sleep(1)
+        # while con==1:
+        #     try:
+        #         con = self.pool[np.random.randint(3)].get_connection()
+        #     except:
+        #         time.sleep(1)
 
-        return con
+        # return con
             
     def sgd(self,train_inputs,train_labels,test_inputs,test_labels,
             test_check=True,train_check=False):
@@ -143,7 +143,7 @@ class Baseline:
                                 'bias_mu':pkl.dumps(b_mu),
                                 'bias_sig':pkl.dumps(b_sig),
                                 'mbid':mbid}
-                    dbutils.saveToDB_m(self.connect(),'ann.mbparams',rec_params)
+                    dbutils.saveToDB(self.connect(),'ann.mbparams',rec_params)
                     
                                 
                     rec_samples={'error_mu':pkl.dumps(err_mu),
@@ -156,7 +156,7 @@ class Baseline:
                                  'activation_kurtosis':pkl.dumps(act_kurtosis),
                                  'mbid':mbid}
                 
-                    dbutils.saveToDB_m(self.connect(),'ann.mbsamples',rec_samples)
+                    dbutils.saveToDB(self.connect(),'ann.mbsamples',rec_samples)
 
                     rec_mbdata={'mbid':mbid,
                                 'W':pkl.dumps(self.weights),
@@ -164,7 +164,7 @@ class Baseline:
                                 'error':pkl.dumps(self.deltas),
                                 'activation':pkl.dumps(self.us)}
                 
-                    dbutils.saveToDB_m(self.connect(),'ann.mb_data',rec_mbdata)
+                    dbutils.saveToDB(self.connect(),'ann.mb_data',rec_mbdata)
 
                 
             if test_check:
@@ -198,9 +198,9 @@ class Baseline:
                 dbutils.execute_m(self.connect(),sqlstr.format(epochid, self.train_accu[-1],self.train_cost[-1],self.test_accu[-1], self.test_cost[-1],tend-tstart))
 
             print "Epoch {0} completed. Time:{1}".format(p,tend-tstart)
-        #close connection once recording is finished.
+
         if self.dbrec:
-            self.con.close()
+           self.con.close()
             
 
     def feedforward(self,batch_data):
