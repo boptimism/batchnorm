@@ -37,14 +37,17 @@ if __name__=="__main__":
     train_check=data['train_check']
     
     lrate_decay=data['lrate_decay']
-
+    init_type=data['init']
+    
     dbrec=bool(int(sys.argv[1]))
+
+    rec_check=bool(int(sys.argv[2]))
     
     network=bl.Baseline(layers,learnrate,lrate_decay,batchsize,epochs,num_of_trains,num_of_tests,
                         weights,bias,dbrec=dbrec)
 
-    network.sgd(train_input,train_label,test_input,test_label,
-                test_check=test_check,train_check=train_check)
+    network.sgd(train_input,train_label,test_input,test_label,init_type,
+                test_check=test_check,train_check=train_check,rec_check=rec_check)
 
     #------------------------------------------
     data={"number_of_trains":num_of_trains,

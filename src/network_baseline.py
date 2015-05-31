@@ -86,12 +86,17 @@ class Baseline:
 
         return con
             
-    def sgd(self,train_inputs,train_labels,test_inputs,test_labels,
-            test_check=True,train_check=False):
+    def sgd(self,train_inputs,train_labels,test_inputs,test_labels,init_type,
+            test_check=True,train_check=False,rec_check=False):
 
         num_of_trains=len(train_labels)
         batch_per_epoch=num_of_trains/self.batchsize
         idx_epoch=np.arange(num_of_trains)
+
+        if rec_check:
+            rec_ud=[]
+            rec_u=[]
+            rec_d=[]
         
         for p in np.arange(self.epochs):
 
@@ -187,8 +192,15 @@ class Baseline:
                 self.train_accu.append(-1.0)
                 self.train_cost.append(-1.0)
 
+            if rec_check:
+                rec_tmp=[np.dot(x.T,y)/self.batchsize for x,y in zip(self.us[:-1],self.deltas)]
+                rec_ud.append(rec_tmp)
+                rec_tmp=[np.mean(x,0) for x in self.us[:-1]]
+                rec_u.append(rec_tmp)
+                rec_tmp=[np.mean(x,0) for x in self.deltas]
+                rec_d.append(rec_tmp)
+
             tend=time.clock()
-            
             if self.dbrec:
                 sqlstr = 'call update_epoch_accuracy({0},{1},{2},{3},{4},{5})'
                 cur=self.con.cursor()
@@ -206,6 +218,15 @@ class Baseline:
             
 
             print "Epoch {0} completed. Time:{1}".format(p,tend-tstart)
+
+        if rec_check:
+            data={'u_delta_avg':rec_ud,
+                  'u_avg':rec_u,
+                  'delta_avg':rec_d
+            }
+            fname='rec_bl_'+init_type+'.pickle'
+            with open(fname,'wb') as frec:
+                pkl.dump(data,frec,protocol=-1)
             
         if self.dbrec:
             self.con.close()

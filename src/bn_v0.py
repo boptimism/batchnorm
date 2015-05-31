@@ -6,6 +6,7 @@ import network_bn_v0 as bnv0
 import numpy as np
 import matplotlib.pyplot as plt
 import cPickle as pkl
+import sys
 
 if __name__=="__main__":
 
@@ -36,18 +37,14 @@ if __name__=="__main__":
     epochs=data['epochs']
     test_check=data['test_check']
     train_check=data['train_check']
-
-    # learnrate=5.0
-    # batchsize=60
-    # epochs=50
-
-    # test_check=True
-    # train_check=False
+    init_type=data['init']
+    
+    rec_check=bool(int(sys.argv[1]))
     
     network=bnv0.BNv0(layers,learnrate,lrate_decay,batchsize,epochs,weights,bias,gammas)
 
-    network.sgd(train_input,train_label,test_input,test_label,
-                test_check=test_check,train_check=train_check)
+    network.sgd(train_input,train_label,test_input,test_label,init_type,
+                test_check=test_check,train_check=train_check,rec_check=rec_check)
 
     data={"number_of_trains":num_of_trains,
           "number_of_tests":num_of_tests,
@@ -111,6 +108,7 @@ if __name__=="__main__":
 
         plt.savefig('../results/bnv0_TrainSet.png')
         plt.show()
-        
-    with open("../results/bnv0_accuracy.pickle",'w') as frec:
-        pkl.dump(data,frec)
+
+    if test_check or train_check:
+        with open("../results/bnv0_accuracy.pickle",'w') as frec:
+            pkl.dump(data,frec)

@@ -26,21 +26,21 @@ if __name__=="__main__":
     idx_test=np.array(rnd.sample(range(totaltest),numoftests))
 
     layers=[28*28,100,100,100,10]
-    weights=[np.random.randn(x,y)
-            for x,y in zip(layers[:-1],layers[1:])]
-    bias=[np.random.randn(x) for x in layers[1:]]
-    bias.insert(0,np.zeros(layers[0]))
-    gammas=[np.random.randn(x) for x in layers[1:]]
-    gammas.insert(0,np.ones(layers[0]))
-
-    # weights=[np.random.uniform(-1./np.sqrt(x),1./np.sqrt(x),[x,y])
+    # weights=[np.random.randn(x,y)
     #         for x,y in zip(layers[:-1],layers[1:])]
     # bias=[np.random.randn(x) for x in layers[1:]]
-    # #bias=[np.zeros(x) for x in layers[1:]]
     # bias.insert(0,np.zeros(layers[0]))
     # gammas=[np.random.randn(x) for x in layers[1:]]
-    # #gammas=[np.ones(x) for x in layers[1:]]
     # gammas.insert(0,np.ones(layers[0]))
+
+    weights=[np.random.uniform(-1.,1.,[x,y])
+            for x,y in zip(layers[:-1],layers[1:])]
+    bias=[np.random.randn(x) for x in layers[1:]]
+    #bias=[np.zeros(x) for x in layers[1:]]
+    bias.insert(0,np.zeros(layers[0]))
+    gammas=[np.random.randn(x) for x in layers[1:]]
+    #gammas=[np.ones(x) for x in layers[1:]]
+    gammas.insert(0,np.ones(layers[0]))
     
     data={}
     data['layers']=layers
@@ -50,14 +50,14 @@ if __name__=="__main__":
     data['testing_index']=idx_test
     data['gammas']=gammas
 
-    data['learnrate']=2.0
+    data['learnrate']=0.1
     data['batchsize']=60
-    data['epochs']=50
+    data['epochs']=5
 
     data['test_check']=True
-    data['train_check']=True
-
-    data['lrate_decay']=0.002
+    data['train_check']=False
+    data['init']='uniform_lose'
+    data['lrate_decay']=0.0
     
     with open('initial_conf.pickle','wb') as fout:
         pkl.dump(data,fout,protocol=-1)

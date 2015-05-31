@@ -3,6 +3,7 @@ BN-V1
 """
 import numpy as np
 import time
+import cPickle as pkl
 
 class BNv1:
     def __init__(self,layers,learnrate,lrate_decay,batchsize,epochs,weights,bias):
@@ -32,13 +33,17 @@ class BNv1:
         self.train_accu=[]
         self.train_cost=[]
         
-    def sgd(self,train_inputs,train_labels,test_inputs,test_labels,
-            test_check=True,train_check=False):
+    def sgd(self,train_inputs,train_labels,test_inputs,test_labels,init_type,
+            test_check=True,train_check=False,rec_check=False):
         
         num_of_trains=len(train_labels)
         batch_per_epoch=num_of_trains/self.batchsize
         idx_epoch=np.arange(num_of_trains)
-        
+        if rec_check:
+            rec_ud=[]
+            rec_u=[]
+            rec_d=[]
+            
         for p in np.arange(self.epochs):
             tstart=time.clock()
             np.random.shuffle(idx_epoch)
@@ -65,11 +70,28 @@ class BNv1:
                 accu,cost=self.inference(train_inputs,train_labels)
                 self.train_accu.append(accu)
                 self.train_cost.append(cost)
-                    
+
+            if rec_check:
+                rec_tmp=[np.dot(x.T,y)/self.batchsize for x,y in zip(self.us[:-1],self.deltas)]
+                rec_ud.append(rec_tmp)
+                rec_tmp=[np.mean(x,0) for x in self.us[:-1]]
+                rec_u.append(rec_tmp)
+                rec_tmp=[np.mean(x,0) for x in self.deltas]
+                rec_d.append(rec_tmp)
+
             tend=time.clock()
             
             print "Epoch {0} completed. Time:{1}".format(p,tend-tstart)
 
+        if rec_check:
+            data={'u_delta_avg':rec_ud,
+                  'u_avg':rec_u,
+                  'delta_avg':rec_d
+            }
+            fname='rec_bnv1_'+init_type+'.pickle'
+            with open(fname,'wb') as frec:
+                pkl.dump(data,frec,protocol=-1)
+                    
     def feedforward(self,batch_data):
         self.us[0]=batch_data
         for l in np.arange(1,len(self.layers)):
