@@ -26,15 +26,16 @@ if __name__=="__main__":
     idx_test=np.array(rnd.sample(range(totaltest),numoftests))
 
     layers=[28*28,100,100,100,10]
-    # weights=[np.random.randn(x,y)
+    # weights=[np.random.randn(x,y)/np.sqrt(x)
     #         for x,y in zip(layers[:-1],layers[1:])]
     # bias=[np.random.randn(x) for x in layers[1:]]
     # bias.insert(0,np.zeros(layers[0]))
     # gammas=[np.random.randn(x) for x in layers[1:]]
     # gammas.insert(0,np.ones(layers[0]))
 
-    weights=[np.random.uniform(-1.,1.,[x,y])
-            for x,y in zip(layers[:-1],layers[1:])]
+    weights=[np.random.uniform(-1./np.sqrt(x),1./np.sqrt(x),[x,y])
+             for x,y in zip(layers[:-1],layers[1:])]
+    #weights=[0.1*np.ones([x,y]) for x,y in zip(layers[:-1],layers[1:])]
     bias=[np.random.randn(x) for x in layers[1:]]
     #bias=[np.zeros(x) for x in layers[1:]]
     bias.insert(0,np.zeros(layers[0]))
@@ -52,11 +53,11 @@ if __name__=="__main__":
 
     data['learnrate']=0.1
     data['batchsize']=60
-    data['epochs']=5
+    data['epochs']=1
 
     data['test_check']=True
     data['train_check']=False
-    data['init']='uniform_lose'
+    data['init']='constant'
     data['lrate_decay']=0.0
     
     with open('initial_conf.pickle','wb') as fout:

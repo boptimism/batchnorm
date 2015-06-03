@@ -35,7 +35,7 @@ class BNv0:
         self.train_accu=[]
         self.train_cost=[]
         
-    def sgd(self,train_inputs,train_labels,test_inputs,test_labels,init_type,
+    def sgd(self,train_inputs,train_labels,test_inputs,test_labels,init_type,rec_freq,
             test_check=True,train_check=False,rec_check=False):
         
         num_of_trains=len(train_labels)
@@ -48,7 +48,8 @@ class BNv0:
             rec_u=[]
             rec_dx=[]
             rec_ux=[]
-        
+            rec_dw=[]
+            
         for p in np.arange(self.epochs):
             tstart=time.clock()
             np.random.shuffle(idx_epoch)
@@ -64,29 +65,33 @@ class BNv0:
                 num_of_batches=p*batch_per_epoch+q+1
                 self.batch_update(dw,db,dg,num_of_batches)
 
-            if test_check:
-                bs_inf=60
-                ep_inf=3
-                self.pop_stats(train_inputs,ep_inf,bs_inf)
-                accu,cost=self.inference(test_inputs,test_labels)
-                self.test_accu.append(accu)
-                self.test_cost.append(cost)
-            if train_check:
-                accu,cost=self.inference(train_inputs,train_labels)
-                self.train_accu.append(accu)
-                self.train_cost.append(cost)
+                if rec_check and not (q+1)%rec_freq:
+                    rec_tmp=[np.dot(x.T,y)/self.batchsize
+                             for x,y in zip(self.us[:-1],self.deltas)]
+                    rec_ud.append(rec_tmp)
+                    rec_tmp=[np.mean(x,0) for x in self.us[:-1]]
+                    rec_u.append(rec_tmp)
+                    rec_tmp=[np.mean(x,0) for x in self.deltas]
+                    rec_d.append(rec_tmp)
+                    rec_tmp=[np.mean(x*y,0) for x,y in zip(self.deltas,self.xhats[1:])]
+                    rec_dx.append(rec_tmp)
+                    rec_tmp=[np.dot(x.T,y) for x,y in zip(self.us[:-1],self.xhats[1:])]
+                    rec_ux.append(rec_tmp)
+                    rec_dw.append(dw)
 
-            if rec_check:
-                rec_tmp=[np.dot(x.T,y)/self.batchsize for x,y in zip(self.us[:-1],self.deltas)]
-                rec_ud.append(rec_tmp)
-                rec_tmp=[np.mean(x,0) for x in self.us[:-1]]
-                rec_u.append(rec_tmp)
-                rec_tmp=[np.mean(x,0) for x in self.deltas]
-                rec_d.append(rec_tmp)
-                rec_tmp=[np.mean(x*y,0) for x,y in zip(self.deltas,self.xhats[1:])]
-                rec_dx.append(rec_tmp)
-                rec_tmp=[np.dot(x.T,y) for x,y in zip(self.us[:-1],self.xhats[1:])]
-                rec_ux.append(rec_tmp)
+                # mini-batch update performance
+                if test_check and not (q+1)%rec_freq:
+                    bs_inf=60
+                    ep_inf=3
+                    self.pop_stats(train_inputs,ep_inf,bs_inf)
+                    accu,cost=self.inference(test_inputs,test_labels)
+                    self.test_accu.append(accu)
+                    self.test_cost.append(cost)
+                if train_check and not (q+1)%rec_freq:
+                    accu,cost=self.inference(train_inputs,train_labels)
+                    self.train_accu.append(accu)
+                    self.train_cost.append(cost)
+
                     
             tend=time.clock()
             
@@ -97,7 +102,8 @@ class BNv0:
                   'u_avg':rec_u,
                   'delta_avg':rec_d,
                   'ux_avg':rec_ux,
-                  'dx_avg':rec_dx
+                  'dx_avg':rec_dx,
+                  'dw':rec_dw
             }
             fname='rec_bnv0_'+init_type+'.pickle'
             with open(fname,'wb') as frec:

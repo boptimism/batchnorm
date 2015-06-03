@@ -40,10 +40,11 @@ if __name__=="__main__":
     init_type=data['init']
     
     rec_check=bool(int(sys.argv[1]))
+    rec_freq=10
     
     network=bnv0.BNv0(layers,learnrate,lrate_decay,batchsize,epochs,weights,bias,gammas)
 
-    network.sgd(train_input,train_label,test_input,test_label,init_type,
+    network.sgd(train_input,train_label,test_input,test_label,init_type,rec_freq,
                 test_check=test_check,train_check=train_check,rec_check=rec_check)
 
     data={"number_of_trains":num_of_trains,
@@ -63,7 +64,8 @@ if __name__=="__main__":
         data['test_cost']=test_cost
         
         #--------------------------------
-        xaxis=np.arange(epochs)
+        #xaxis=np.arange(epochs)
+        xaxis=np.arange(len(test_accu))
 
         fig=plt.figure(1)
         plt.suptitle('TestSet, BN_V0')

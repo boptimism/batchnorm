@@ -33,7 +33,7 @@ class BNv1:
         self.train_accu=[]
         self.train_cost=[]
         
-    def sgd(self,train_inputs,train_labels,test_inputs,test_labels,init_type,
+    def sgd(self,train_inputs,train_labels,test_inputs,test_labels,init_type,rec_freq,
             test_check=True,train_check=False,rec_check=False):
         
         num_of_trains=len(train_labels)
@@ -43,6 +43,7 @@ class BNv1:
             rec_ud=[]
             rec_u=[]
             rec_d=[]
+            rec_dw=[]
             
         for p in np.arange(self.epochs):
             tstart=time.clock()
@@ -59,25 +60,28 @@ class BNv1:
                 num_of_batches=p*batch_per_epoch+q+1
                 self.batch_update(dw,db,num_of_batches)
 
-            if test_check:
-                bs_inf=60
-                ep_inf=3
-                self.pop_stats(train_inputs,ep_inf,bs_inf)
-                accu,cost=self.inference(test_inputs,test_labels)
-                self.test_accu.append(accu)
-                self.test_cost.append(cost)
-            if train_check:
-                accu,cost=self.inference(train_inputs,train_labels)
-                self.train_accu.append(accu)
-                self.train_cost.append(cost)
+                if rec_check and not (q+1)%rec_freq:
+                    rec_tmp=[np.dot(x.T,y)/self.batchsize
+                             for x,y in zip(self.us[:-1],self.deltas)]
+                    rec_ud.append(rec_tmp)
+                    rec_tmp=[np.mean(x,0) for x in self.us[:-1]]
+                    rec_u.append(rec_tmp)
+                    rec_tmp=[np.mean(x,0) for x in self.deltas]
+                    rec_d.append(rec_tmp)
+                    rec_dw.append(dw)
+                # mini-batch update performance
+                if test_check and not (q+1)%rec_freq:
+                    bs_inf=60
+                    ep_inf=3
+                    self.pop_stats(train_inputs,ep_inf,bs_inf)
+                    accu,cost=self.inference(test_inputs,test_labels)
+                    self.test_accu.append(accu)
+                    self.test_cost.append(cost)
+                if train_check and not (q+1)%rec_freq:
+                    accu,cost=self.inference(train_inputs,train_labels)
+                    self.train_accu.append(accu)
+                    self.train_cost.append(cost)
 
-            if rec_check:
-                rec_tmp=[np.dot(x.T,y)/self.batchsize for x,y in zip(self.us[:-1],self.deltas)]
-                rec_ud.append(rec_tmp)
-                rec_tmp=[np.mean(x,0) for x in self.us[:-1]]
-                rec_u.append(rec_tmp)
-                rec_tmp=[np.mean(x,0) for x in self.deltas]
-                rec_d.append(rec_tmp)
 
             tend=time.clock()
             
@@ -86,7 +90,8 @@ class BNv1:
         if rec_check:
             data={'u_delta_avg':rec_ud,
                   'u_avg':rec_u,
-                  'delta_avg':rec_d
+                  'delta_avg':rec_d,
+                  'dw':rec_dw
             }
             fname='rec_bnv1_'+init_type+'.pickle'
             with open(fname,'wb') as frec:

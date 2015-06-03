@@ -86,7 +86,7 @@ class Baseline:
 
         return con
             
-    def sgd(self,train_inputs,train_labels,test_inputs,test_labels,init_type,
+    def sgd(self,train_inputs,train_labels,test_inputs,test_labels,init_type,rec_freq,
             test_check=True,train_check=False,rec_check=False):
 
         num_of_trains=len(train_labels)
@@ -97,7 +97,8 @@ class Baseline:
             rec_ud=[]
             rec_u=[]
             rec_d=[]
-        
+            rec_dw=[]
+            
         for p in np.arange(self.epochs):
 
             # SQL--------------------------------------
@@ -125,7 +126,16 @@ class Baseline:
                 self.batch_update(dw,db,num_of_batches)
 
                 te=time.clock()
-
+                if rec_check and not (q+1)%rec_freq:
+                    rec_tmp=[np.dot(x.T,y)/self.batchsize
+                             for x,y in zip(self.us[:-1],self.deltas)]
+                    rec_ud.append(rec_tmp)
+                    rec_tmp=[np.mean(x,0) for x in self.us[:-1]]
+                    rec_u.append(rec_tmp)
+                    rec_tmp=[np.mean(x,0) for x in self.deltas]
+                    rec_d.append(rec_tmp)
+                    rec_dw.append(dw)
+                    
                 if self.dbrec:
                 
                     w_mu=[np.mean(self.weights[i-1],0) for i,x in enumerate(self.layers)]
@@ -176,29 +186,22 @@ class Baseline:
                 
                     dbutils.saveToDB_m(self.connect(),'ann.mb_data',rec_mbdata)
 
-                
-            if test_check:
-                accu,cost=self.inference(test_inputs,test_labels)
-                self.test_accu.append(accu)
-                self.test_cost.append(cost)
-            else:
-                self.test_accu.append(-1.0)
-                self.test_cost.append(-1.0)
-            if train_check:
-                accu,cost=self.inference(train_inputs,train_labels)
-                self.train_accu.append(accu)
-                self.train_cost.append(cost)
-            else:
-                self.train_accu.append(-1.0)
-                self.train_cost.append(-1.0)
+                    #check mini-batch update's performance
+                if test_check and not (q+1)%rec_freq:
+                    accu,cost=self.inference(test_inputs,test_labels)
+                    self.test_accu.append(accu)
+                    self.test_cost.append(cost)
+                # else:
+                #     self.test_accu.append(-1.0)
+                #     self.test_cost.append(-1.0)
+                if train_check and not (q+1)%rec_freq:
+                    accu,cost=self.inference(train_inputs,train_labels)
+                    self.train_accu.append(accu)
+                    self.train_cost.append(cost)
+                # else:
+                #     self.train_accu.append(-1.0)
+                #     self.train_cost.append(-1.0)
 
-            if rec_check:
-                rec_tmp=[np.dot(x.T,y)/self.batchsize for x,y in zip(self.us[:-1],self.deltas)]
-                rec_ud.append(rec_tmp)
-                rec_tmp=[np.mean(x,0) for x in self.us[:-1]]
-                rec_u.append(rec_tmp)
-                rec_tmp=[np.mean(x,0) for x in self.deltas]
-                rec_d.append(rec_tmp)
 
             tend=time.clock()
             if self.dbrec:
@@ -222,7 +225,8 @@ class Baseline:
         if rec_check:
             data={'u_delta_avg':rec_ud,
                   'u_avg':rec_u,
-                  'delta_avg':rec_d
+                  'delta_avg':rec_d,
+                  'dw':rec_dw
             }
             fname='rec_bl_'+init_type+'.pickle'
             with open(fname,'wb') as frec:
