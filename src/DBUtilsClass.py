@@ -1,5 +1,19 @@
+try:
+	import MySQLdb as db
+	print "Using MySQLdb"
+except ImportError:
+	print "MySQLdb not found"
+	try:				
+		import mysql.connector as db
+		from mysql.connector import Error
+		print "Using mysql.connector"
+	except ImportError:
+		print "Neither MySQLdb nor mysql.connector found.  Dependency failure"
+		raise ImportError('Cannot find MySQLdb or mysql.connector module')
 
 
+from multiprocessing import Process
+import sys
 
 class Connection():
 	"""This class wraps communication with a MySQL server. It will try to use MySQLdb as the module for connection, but will fallback to mysql.connector if necessary.
@@ -28,19 +42,7 @@ class Connection():
 
 		
 		# Try to use the native MySQLdb module if possible.
-		try:
-			import MySQLdb as db
-			print "Using MySQLdb"
-		except ImportError:
-			print "MySQLdb not found"
-			try:				
-				import mysql.connector as db
-				from mysql.connector import Error
-				print "Using mysql.connector"
-			except ImportError:
-				print "Neither MySQLdb nor mysql.connector found.  Dependency failure"
-				raise ImportError('Cannot find MySQLdb or mysql.connector module')
-
+		
 		import ConfigParser as cp
 		self.config = cp.ConfigParser()
 		try: 
@@ -61,7 +63,6 @@ class Connection():
 
 		if len(args)==1 and isinstance(args[0],dict):
 			self.cfg = args[0]
-			self.con=db.connect(**self.cfg)
 			for k,v in zip(self.cfg.keys(), self.cfg.values()):
 				self.config.set('client',k,v)
 
@@ -75,18 +76,32 @@ class Connection():
 					self.config.set('client',x,y)
 
 			except IndexError:  # We might run out of arguments, since db is optional
-				pass				
+				pass	
 
-			self.con=db.connect(**d)
-		self.cur=self.con.cursor()
+			self.cfg = d			
+
+		self.checkConnection()
 
 
 	def __del__(self):
+		self.con.close()
 		pass
 		# If you use multithreading or processing you must make sure everything is done before closing up!
 
 	def checkConnection(self):
-		pass
+		
+		try:
+			if self.con.open:
+				pass
+				#everything is good
+			else:
+				self.con = db.connect(**self.cfg)
+				self.cur = self.con.cursor()
+		except AttributeError:
+			# This is the first time we are calling the function
+			self.con = db.connect(**self.cfg)
+			self.cur = self.con.cursor()
+
 
 	def saveSettings(self):
 		import os, stat
@@ -222,9 +237,19 @@ class Connection():
 
 
 if __name__ == "__main__":
+	d = {'host':'erlichfs','user':'jerlich','passwd':'jce!u4$'}
+	a = Connection(d)
+
 	c = Connection()
 	q=c.query('show schemas')
-	print q
+	for item in q:
+		print item[0]
+		tab = c.query('show tables from ' + item[0])
+		for t in tab:
+			print item[0] + '.' +  t[0]
+
+	w = a.query('show schemas')
+	print w
 
 
 
