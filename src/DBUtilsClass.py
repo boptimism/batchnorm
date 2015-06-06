@@ -55,13 +55,18 @@ class Connection():
 		if len(args)==1 and isinstance(args[0],dict):
 			self.cfg = args[0]
 			self.con=db.connect(**self.cfg)
+			for k,v in zip(self.cfg.keys(), self.cfg.values()):
+				self.config.set('client',k,v)
+
 		elif len(args)==1:
-			raise Exception('When calling Connection with ')	
+			raise Exception('When calling Connection with one argument it must be a dictionary')	
 		else:
 			l = ('host','user','passwd','db')
 			try:
 				for x,y in zip(l,args):
 					d[x]=y
+					self.config.set('client',x,y)
+
 			except IndexError:  # We might run out of arguments, since db is optional
 				pass				
 
