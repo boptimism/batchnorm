@@ -1,4 +1,5 @@
 try:
+	# Try to use the native MySQLdb module if possible.	
 	import MySQLdb as db
 	print "Using MySQLdb"
 except ImportError:
@@ -40,9 +41,6 @@ class Connection():
 			con = Connection(dbconf)
 				where dbconf is a dictionary with user,host,passwd, database and other parameters to pass to the connect argument of the module. See http://mysql-python.sourceforge.net/MySQLdb.html#functions-and-attributes for a full list of possible connection attributes."""
 
-		
-		# Try to use the native MySQLdb module if possible.
-		
 		import ConfigParser as cp
 		self.config = cp.ConfigParser()
 		try: 
@@ -59,7 +57,6 @@ class Connection():
 			args[0] = dict((x, y) for x, y in self.config.items('client'))
 			print "Loaded defaults from ~/.dbconf"
 			# We should maybe check here that there is enough info to connect
-		
 
 		if len(args)==1 and isinstance(args[0],dict):
 			self.cfg = args[0]
@@ -71,6 +68,7 @@ class Connection():
 		else:
 			l = ('host','user','passwd','db')
 			try:
+				d={}
 				for x,y in zip(l,args):
 					d[x]=y
 					self.config.set('client',x,y)
