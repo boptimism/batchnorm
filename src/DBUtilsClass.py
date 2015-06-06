@@ -36,20 +36,27 @@ class Connection():
 			try:				
 				import mysql.connector as db
 				from mysql.connector import Error
+				print "Using mysql.connector"
 			except ImportError:
 				print "Neither MySQLdb nor mysql.connector found.  Dependency failure"
 				raise ImportError('Cannot find MySQLdb or mysql.connector module')
 
 		import ConfigParser as cp
 		self.config = cp.ConfigParser()
+		try: 
+			self.config.add_section('client')
+		except cp.DuplicateSectionError:
+			pass
+			# It's ok if the section exists.
 
 		# Parse the inputs		
 		if len(args)==0:   # Try to use defaults in ~/.dbconf
 			import ConfigParser as cp
-			self.config.read(self.defaultConfigFile())   # This will throw an error in some cases. Like running on windows 
+			self.config.read(self.defaultConfigFile()) 
 			args = [None]
-			args[0] = dict((x, y) for x, y in config.items('client'))
+			args[0] = dict((x, y) for x, y in self.config.items('client'))
 			print "Loaded defaults from ~/.dbconf"
+			# We should maybe check here that there is enough info to connect
 		
 
 		if len(args)==1 and isinstance(args[0],dict):
@@ -71,6 +78,7 @@ class Connection():
 				pass				
 
 			self.con=db.connect(**d)
+		self.cur=self.con.cursor()
 
 
 	def __del__(self):
@@ -176,9 +184,12 @@ class Connection():
 		p.start()
 		return p
 
-	def execute(con,sqlstr,closeit=False):
+	def execute(self,sqlstr,closeit=False):
+		'''Connection.execute(sql_command)
+			use this for commands that do not require any return values.
+		'''
 		try:
-			cur=con.cursor()
+			cur=self.con
 			cur.execute(sqlstr)
 			con.commit()
 			cur.close()
@@ -191,6 +202,18 @@ class Connection():
 			print 'closed connection'
 
 
+	def query(self,sqlstr):
+		'''Connection.query(sql_command)
+			returns cursor.fetchall()
+			Use this for commands that do require return values.
+		'''
+
+		try:
+			cur=self.cur
+			cur.execute(sqlstr)
+			return cur.fetchall()
+		except: 
+			print 'Exception in query'
 
 
 	def execute_m(con,sqlstr):
@@ -199,9 +222,10 @@ class Connection():
 
 
 if __name__ == "__main__":
-	import getpass
-	d = {'host':'erlichfs', 'user':'jerlich', 'passwd':getpass.getpass()}
-	c = Connection(d)
-	c.saveSettings()
+	c = Connection()
+	q=c.query('show schemas')
+	print q
+
+
 
 
