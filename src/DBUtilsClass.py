@@ -29,6 +29,7 @@ class Connection():
 		saveToDB 		a wrapper for insert statements, returns last_insert_id
 		call			a wrapper for calling mysql procedures
 		execute 		passes through to cur.execute for things not covered by the wrapper functions
+		query 			An SQL query that returns the results
 		saveSettings	saves your connection information to .dbconf in your home directory
 		use 			set the default database
 
@@ -83,11 +84,12 @@ class Connection():
 
 	def __del__(self):
 		self.con.close()
-		pass
 		# If you use multithreading or processing you must make sure everything is done before closing up!
 
 	def checkConnection(self):
-		
+		"""checkConnection()
+				This function checks for a database connection and tries to get a new one if an open connection does not exist
+		"""
 		try:
 			if self.con.open:
 				pass
@@ -119,7 +121,6 @@ class Connection():
 
 	def getFromDB(self,table,fields,wherestr=''):
 		colstr = ""
-		cur=con.cursor()
 		for k in fields:
 			colstr+= "`" + k + "`" + ","
 			
@@ -130,16 +131,33 @@ class Connection():
 			sqlstr = "select " + colstr + "from " + table + " where " + wherestr
 
 		try:
-			print sqlstr		
-			cur.execute(sqlstr)
-			return cur.fetchall()
+			self.cur.execute(sqlstr)
+			return self.cur.fetchall()
 		except Error as err:
 			print("Something went wrong: {}".format(err))
-			return 1
+			raise err
 
 
 	def lastInsertID(self):
+		self.cur.execute('select last_insert_id()')
 		return cur.fetchone()[0]
+
+
+	def saveManyToDB(self,table,cols,values):
+		'''saveManyToDB(table,cols,vals)
+
+			Table 	The table to insert into
+			cols 	The column names to insert
+			vals    a tuple of tuples.  Each inner tuple should have as many elements as cols
+
+			e.g. a = ((1,2,3),(4,5,6))
+			c.saveManyToDB('foo',('col1','col2','col3'),a)		
+			'''
+
+			sqlstr = "INSERT INTO " + table + " " + str(cols) + " VALUES " + str(values)[1:-1]
+			self.cur.execute(sqlstr)
+			self.con.commit()
+
 
 
 	def saveToDB(self,table,mydict,closeit=False):
