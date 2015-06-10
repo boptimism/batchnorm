@@ -117,6 +117,8 @@ class Connection():
 		from os.path import expanduser, sep
 		return expanduser("~") + sep + ".dbconf"
 
+	def use(self,schema):
+		self.cur.execute('use ' + schema)
 		
 
 	def getFromDB(self,table,fields,wherestr=''):
@@ -154,9 +156,9 @@ class Connection():
 			c.saveManyToDB('foo',('col1','col2','col3'),a)		
 			'''
 
-			sqlstr = "INSERT INTO " + table + " " + str(cols) + " VALUES " + str(values)[1:-1]
-			self.cur.execute(sqlstr)
-			self.con.commit()
+		sqlstr = "INSERT INTO " + table + " " + str(cols) + " VALUES " + str(values)[1:-1]
+		self.cur.execute(sqlstr)
+		self.con.commit()
 
 
 
@@ -253,19 +255,19 @@ class Connection():
 
 
 if __name__ == "__main__":
-	d = {'host':'erlichfs','user':'jerlich','passwd':'jce!u4$'}
-	a = Connection(d)
+	d = {'host':'brodyfs2.princeton.edu','user':'jerlich','passwd':'jce!u4$'}
+	c = Connection(d)
 
-	c = Connection()
-	q=c.query('show schemas')
+	q=('matlab_jobs','matlab_results')
+	showcreate=[]
 	for item in q:
-		print item[0]
-		tab = c.query('show tables from ' + item[0])
+		tab = c.query('show tables from ' + item)
+		c.use(item)
+		print "use " + item
 		for t in tab:
-			print item[0] + '.' +  t[0]
+			print c.query('show create table ' + t[0])[0][1]
+			
 
-	w = a.query('show schemas')
-	print w
 
 
 
