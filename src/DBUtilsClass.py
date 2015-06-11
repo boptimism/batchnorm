@@ -16,7 +16,7 @@ except ImportError:
 from multiprocessing import Process
 import sys
 
-class Connection():
+class Connection(object):
 	"""This class wraps communication with a MySQL server. It will try to use MySQLdb as the module for connection, but will fallback to mysql.connector if necessary.
 
 		Properties:
@@ -51,7 +51,7 @@ class Connection():
 			# It's ok if the section exists.
 
 		# Parse the inputs		
-		if len(args)==0:   # Try to use defaults in ~/.dbconf
+		if not args:   # Try to use defaults in ~/.dbconf
 			import ConfigParser as cp
 			self.config.read(self.defaultConfigFile()) 
 			args = [None]
@@ -91,17 +91,24 @@ class Connection():
 				This function checks for a database connection and tries to get a new one if an open connection does not exist
 		"""
 		try:
-			if self.con.open:
-				pass
-				#everything is good
-			else:
-				self.con = db.connect(**self.cfg)
-				self.cur = self.con.cursor()
+			self.con.ping()
+			#everything is good
 		except AttributeError:
 			# This is the first time we are calling the function
 			self.con = db.connect(**self.cfg)
 			self.cur = self.con.cursor()
+		except:
+			self.con = db.connect(**self.cfg)
+			self.cur = self.con.cursor()
+	
 
+	def call(self,str):
+		self.execute('call ' + str)
+
+
+
+	def commit(self):
+		self.con.commit()
 
 	def saveSettings(self):
 		import os, stat
@@ -119,7 +126,7 @@ class Connection():
 
 	def use(self,schema):
 		self.cur.execute('use ' + schema)
-		
+		self.con.commit()
 
 	def getFromDB(self,table,fields,wherestr=''):
 		colstr = ""
@@ -142,7 +149,7 @@ class Connection():
 
 	def lastInsertID(self):
 		self.cur.execute('select last_insert_id()')
-		return cur.fetchone()[0]
+		return self.cur.fetchone()[0]
 
 
 	def saveManyToDB(self,table,cols,values):
@@ -158,11 +165,11 @@ class Connection():
 
 		sqlstr = "INSERT INTO " + table + " " + str(cols) + " VALUES " + str(values)[1:-1]
 		self.cur.execute(sqlstr)
-		self.con.commit()
+		self.commit()
 
 
 
-	def saveToDB(self,table,mydict,closeit=False):
+	def saveToDB(self,table,mydict):
 
 		def insert(cur,table,mydict):
 			sqlstr = "insert into " + table
@@ -186,7 +193,7 @@ class Connection():
 				print wholestr
 				return 1
 
-		cur=con.cursor()
+		cur=self.cur
 		if isinstance(mydict,dict):
 			err=insert(cur,table,mydict)
 		else:
@@ -200,15 +207,11 @@ class Connection():
 				err=1
 		 
 		if (err == 0):
-			con.commit()
+			self.commit()
 		else:
-			con.rollback()
+			self.con.rollback()
 			print 'Error saving to DB'
 
-		cur.close()
-		if closeit:
-			con.close()
-			print 'closed connection'
 
 		return err
 
@@ -217,28 +220,26 @@ class Connection():
 		p.start()
 		return p
 
-	def execute(self,sqlstr,closeit=False):
+	def execute(self,sqlstr,vals=None):
 		'''Connection.execute(sql_command)
 			use this for commands that do not require any return values.
 		'''
 		try:
-			cur=self.con
-			cur.execute(sqlstr)
-			con.commit()
-			cur.close()
-		except: 
-			'put in proper mysql error'
-			con.rollback()
-
-		if closeit:
-			con.close()
-			print 'closed connection'
+			self.cur.execute(sqlstr,vals)
+			self.con.commit()
+		except db.Error, e:
+			try:
+				print "MySQL Error [%d]: %s" % (e.args[0], e.args[1])
+			except IndexError:
+				print "MySQL Error: %s" % str(e) 
+			print sqlstr
+			self.con.rollback()
 
 
 	def query(self,sqlstr):
 		'''Connection.query(sql_command)
 			returns cursor.fetchall()
-			Use this for commands that do require return values.
+			Use this for commands that require return values.
 		'''
 
 		try:
