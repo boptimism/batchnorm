@@ -50,7 +50,7 @@ def inputs_gen(args):
     data['lrate_decay']=0.0
     
     for arg in args:
-        data['learnrate']=0.1
+        data['learnrate']=arg
         input_data.append(pkl.dumps(data))
 
     return input_data
