@@ -9,11 +9,19 @@ import cPickle as pkl
 
 if __name__=="__main__":
 
+    run_batchnorm()
+
+def run_batchnorm(params={}):
+
+    
     t_img,t_label=dl.training_load()
     s_img,s_label=dl.test_load()
 
     with open('initial_conf.pickle','rb') as f_init:
         data=pkl.load(f_init)
+
+    for k,v in params.items():
+        data[k]=v        
 
     training_index=data['training_index']
     testing_index=data['testing_index']
