@@ -1,19 +1,23 @@
-import numpy as np
+Aimport numpy as np
 from funcs import *
 
 class Layer(object):
-    def __init__(self,num_of_nodes,actfn):
+
+    def __init__(self,num_of_nodes,actfn,prepfn):
+        self._layertype=prepfn
         self._dim=num_of_nodes
         self._actFn=actFn[actfn]
         self._dactFn=dactFn[actfn]
+        self._prepFn=prepFn[prepfn]
 
-        self.bias=np.random.uniform(-1.,1.,len(self.dim))
+        self.bias=np.random.uniform(-1.,1.,len(self._dim))
+        self.gammas=np.ones(len(self._dim))
 
         self.deltas=np.array([])
-        self.xs=np.array([])
+        self.xhats=np.array([])
         self.ys=np.array([])
         self.us=np.array([])
-
+        
     def activate(self):
         self.us=self._actFn(self.ys)
 
@@ -21,8 +25,8 @@ class Layer(object):
         return self._dactFn(self.ys)
 
     def preprocess(self,inputs):
-        self.xs=inputs
-        self.ys=inputs+self.bias
+        self.xhats=self._prepFn(inputs)
+        self.ys=self.gammas*self.xhats+self.bias
 
 class InputLayer(Layer):
     def __init__(self,num_of_nodes,actfn='pass',prepfn='pass'):
@@ -39,6 +43,8 @@ class Network(object):
         self.layers.insert(0,InputLayer(lnodes[0]))
         self.weights=[np.random.uniform(-1.,1.,[x,y])
                       for x,y in zip(lnodes[:-1],lnodes[1:])]
+        self.backprop={}
+        
         
     def forward(self,inputs):
         self.layer[0].preprocess(inputs)
@@ -52,6 +58,9 @@ class Network(object):
             l_outs=layer.us
     
     def backward(self,labels):
+        dw=[]
+        db=[]
+        dg=[]
         if self.types[-1]!='softmax':
             dudy=self.layers[-1].dudy()
             self.layers[-1].deltas=dudy*self._dlossFn(labels,self.layers[-1].us)
@@ -60,9 +69,21 @@ class Network(object):
             dcdu=self._dlossFn(labels,self.layers[-1].us)
             self.layers[-1].deltas=np.array([np.dot(x,y)
                                              for x,y in zip(dcdu,dudy)])
-        for layer in reversed(self.layers[:-2]):
-            dw,db,dg=self.backprop(layer.modtype)
+        for l0,l1 in zip(reversed(self.layers[:-1]),reversed(self.layers[1:])):
+            if l1._layertype==''
+            dw,db,dg=self.backprop[l1._layertype](l0,l1)
 
-    def backprop(self,modtype):
+    
+
+            
+    def bp_baseline(self,l0,l1):
+        
+    def bp_sample_norm(self):
+
+    def bp_sample_center(self):
+
+    def bp_layer_norm(self):
+
+    def bp_layer_center(self):
             
         

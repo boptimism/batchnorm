@@ -79,18 +79,18 @@ class BNv0:
                     rec_ux.append(rec_tmp)
                     rec_dw.append(dw)
 
-                # mini-batch update performance
-                if test_check and not (q+1)%rec_freq:
-                    bs_inf=60
-                    ep_inf=3
-                    self.pop_stats(train_inputs,ep_inf,bs_inf)
-                    accu,cost=self.inference(test_inputs,test_labels)
-                    self.test_accu.append(accu)
-                    self.test_cost.append(cost)
-                if train_check and not (q+1)%rec_freq:
-                    accu,cost=self.inference(train_inputs,train_labels)
-                    self.train_accu.append(accu)
-                    self.train_cost.append(cost)
+            # mini-batch update performance
+            if test_check and not (q+1)%rec_freq:
+                bs_inf=60
+                ep_inf=3
+                self.pop_stats(train_inputs,ep_inf,bs_inf)
+                accu,cost=self.inference(test_inputs,test_labels)
+                self.test_accu.append(accu)
+                self.test_cost.append(cost)
+            if train_check and not (q+1)%rec_freq:
+                accu,cost=self.inference(train_inputs,train_labels)
+                self.train_accu.append(accu)
+                self.train_cost.append(cost)
 
                     
             tend=time.clock()

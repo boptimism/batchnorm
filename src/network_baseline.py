@@ -187,20 +187,20 @@ class Baseline:
                     dbutils.saveToDB_m(self.connect(),'ann.mb_data',rec_mbdata)
 
                     #check mini-batch update's performance
-                if test_check and not (q+1)%rec_freq:
-                    accu,cost=self.inference(test_inputs,test_labels)
-                    self.test_accu.append(accu)
-                    self.test_cost.append(cost)
-                # else:
-                #     self.test_accu.append(-1.0)
-                #     self.test_cost.append(-1.0)
-                if train_check and not (q+1)%rec_freq:
-                    accu,cost=self.inference(train_inputs,train_labels)
-                    self.train_accu.append(accu)
-                    self.train_cost.append(cost)
-                # else:
-                #     self.train_accu.append(-1.0)
-                #     self.train_cost.append(-1.0)
+            if test_check:# and not (q+1)%rec_freq:
+                accu,cost=self.inference(test_inputs,test_labels)
+                self.test_accu.append(accu)
+                self.test_cost.append(cost)
+                    # else:
+                    #     self.test_accu.append(-1.0)
+                    #     self.test_cost.append(-1.0)
+            if train_check:# and not (q+1)%rec_freq:
+                accu,cost=self.inference(train_inputs,train_labels)
+                self.train_accu.append(accu)
+                self.train_cost.append(cost)
+                    # else:
+                    #     self.train_accu.append(-1.0)
+                    #     self.train_cost.append(-1.0)
 
 
             tend=time.clock()
