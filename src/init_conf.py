@@ -32,6 +32,7 @@ if __name__=="__main__":
     bias.insert(0,np.zeros(layers[0]))
     gammas=[np.random.randn(x) for x in layers[1:]]
     gammas.insert(0,np.ones(layers[0]))
+    learnrate=0.1
 
     # weights=[np.random.uniform(-1.,1.,[x,y])
     #         for x,y in zip(layers[:-1],layers[1:])]
@@ -47,6 +48,7 @@ if __name__=="__main__":
     data['training_index']=idx_train
     data['testing_index']=idx_test
     data['gammas']=gammas
+    data['learnrate']=learnrate
     
     with open('initial_conf.pickle','wb') as fout:
         pkl.dump(data,fout,protocol=-1)

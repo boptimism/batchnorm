@@ -29,7 +29,7 @@ if __name__=="__main__":
     num_of_trains=len(train_input)
     num_of_tests=len(test_input)
     
-    learnrate=0.1
+    learnrate=data['learnrate']
     batchsize=60
     epochs=50
 
