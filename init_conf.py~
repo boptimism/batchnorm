@@ -4,7 +4,7 @@ generate different initialization and submit to job Queue
 import input_gen
 from /Users/Bo/Projects/PyScheduler/src import addjob
 import numpy as np
-from src import *
+
 
 if __name__=="__main__":
 
