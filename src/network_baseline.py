@@ -8,6 +8,8 @@ import sys, os
 from os.path import expanduser, sep
 sys.path.append(expanduser("~") + sep + "modules")
 from helpers.DBUtilsClass import Connection
+from random import random
+
 
 class Baseline:
     def __init__(self,layers,learnrate,batchsize,epochs,num_trains,num_tests,
@@ -91,7 +93,7 @@ class Baseline:
 
                 te=time.clock()
 
-                if self.dbrec and (p==0):
+                if self.dbrec and (p==0) and (random()<0.15 or q<100):
 
                     accu,cost=self.inference(test_inputs,test_labels)
 
