@@ -12,14 +12,16 @@ except:
 import cPickle as pkl
 import sys
 import argparse
-
+import os
+from os.path import expanduser, sep
+pklpath = os.path.dirname(dl.__file__)
 
 def run_baseline(params={}):
 
     t_img,t_label=dl.training_load()
     s_img,s_label=dl.test_load()
-
-    with open('initial_conf.pickle','rb') as f_init:
+    
+    with open(pklpath + sep + 'initial_conf.pickle','rb') as f_init:
         data=pkl.load(f_init)
 
     # This is where we overwrite the defaults with the passed in paramters.    
