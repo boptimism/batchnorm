@@ -14,7 +14,7 @@ import sys
 import argparse
 import os
 from os.path import expanduser, sep
-pklpath = expanduser("~") + sep + "modules" + sep + "batchnorm" + sep
+pklpath = expanduser("~") + sep + "repos" + sep + "batchnorm" + sep + "src"
 
 def run_baseline(params={}):
 
