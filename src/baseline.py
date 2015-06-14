@@ -56,9 +56,14 @@ def run_baseline(params={}):
     batchsize=60
     epochs=50
 
+    try:
+        cmt=data['comment']
+    except:
+        cmt=''
+
     
     network=bl.Baseline(layers,learnrate,batchsize,epochs,num_of_trains,num_of_tests,
-                        weights,bias,dbrec=dbrec,stop_at=stop_at,comment=data['comment'])
+                        weights,bias,dbrec=dbrec,stop_at=stop_at,comment=cmt)
 
     network.sgd(train_input,train_label,test_input,test_label,
                 test_check=test_check,train_check=train_check)
