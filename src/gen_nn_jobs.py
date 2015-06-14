@@ -44,7 +44,9 @@ if __name__ == "__main__":
 
 	dist_type = ('uni','norm')
 	dist_var  = ('low', 'high')
-	network_type = ('baseline', 'bn_v0', 'bn_v1')
+#	network_type = ('baseline', 'bn_v0', 'bn_v1')
+#	only the baseline network is ready to write to the DB. others need work, so we start with this.
+	network_type = (baseline,)
 	js = jobScheduler()
 	repeats = 4
 
@@ -56,7 +58,11 @@ if __name__ == "__main__":
 			for dv in dist_var:
 				W = weight_func[dt][dv](layers)
 				for lr in learning_rate_list:
-					data={}
+					data={
+						'train_check':False,
+						'test_check':False,
+
+					}
 					data['learnrate']=lr
 					data['weights']=W
 					allinp.append(data)
