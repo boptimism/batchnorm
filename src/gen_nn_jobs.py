@@ -2,8 +2,7 @@ import numpy as np
 import sys
 import os
 from os.path import expanduser, sep
-		 expanduser("~")
-sys.path.append(expanduser("~") + "/repos/PyScheduler/src")
+sys.path.append(expanduser("~") + "/modules/PyScheduler/src")
 from addjob import jobScheduler
 
 
@@ -57,7 +56,10 @@ if __name__ == "__main__":
 				for lr in learning_rate_list:
 					data={
 						'train_check':False,
-						'test_check':False,
+						'test_check':True,
+						'save_file':False,
+						'plot_flag':False,
+						'stop_at':0.92
 
 					}
 					data['learnrate']=lr
@@ -67,11 +69,10 @@ if __name__ == "__main__":
 
 #	only the baseline network is ready to write to the DB. others need work, so we start with this.
 
-	network_type = ('run_baseline',)
+	func_names = ('run_baseline',)
 	mod_names = ('baseline',)
 	js = jobScheduler()
 
-	for mn,fn in zip(modules, funcnames):
-		# js.addJobs('jerlich@nyu.edu','batchnorm.' + mn,fn,allinp,comment)
-		pass
-
+	for mn,fn in zip(mod_names, func_names):
+		js.addJobs('jerlich@nyu.edu','batchnorm.' + mn,fn,allinp,comment)
+		

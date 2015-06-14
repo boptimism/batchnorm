@@ -45,7 +45,11 @@ def run_baseline(params={}):
     train_check=bool(data['train_check'])
     save_file=bool(data['save_file'])
     dbrec=data['dbrec']
-
+    try:
+        plot_flag=data['plot_flag']
+    except:
+        plot_flag=False
+    
     num_of_trains=len(train_input)
     num_of_tests=len(test_input)
 
