@@ -50,7 +50,11 @@ if __name__=="__main__":
     data['gammas']=gammas
     data['learnrate']=learnrate
     data['stop_at']=1  # once accuracy reaches this level stop the run.
-    
+    data['train_check']=True
+    data['test_check']=True
+    data['save_file']=True
+    data['dbrec']=1
+
     with open('initial_conf.pickle','wb') as fout:
         pkl.dump(data,fout,protocol=-1)
     
