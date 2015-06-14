@@ -44,10 +44,7 @@ if __name__ == "__main__":
 
 	dist_type = ('uni','norm')
 	dist_var  = ('low', 'high')
-#	network_type = ('baseline', 'bn_v0', 'bn_v1')
-#	only the baseline network is ready to write to the DB. others need work, so we start with this.
-	network_type = (baseline,)
-	js = jobScheduler()
+	
 	repeats = 4
 
 	allinp=[]
@@ -68,8 +65,13 @@ if __name__ == "__main__":
 					allinp.append(data)
 					comment.append('learning rate: {0}, dist_type: {1}, dist_var: {2}, repeat: {3}'.format(lr,dt,dv,rx+1))
 
+#	only the baseline network is ready to write to the DB. others need work, so we start with this.
 
-	for nn in network_type:
-		# js.addJobs('jerlich@nyu.edu','batchnorm.src',nn,allinp,comment)
+	network_type = ('run_baseline',)
+	mod_names = ('baseline',)
+	js = jobScheduler()
+
+	for mn,fn in zip(modules, funcnames):
+		# js.addJobs('jerlich@nyu.edu','batchnorm.' + mn,fn,allinp,comment)
 		pass
 
