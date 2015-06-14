@@ -2,14 +2,11 @@ import numpy as np
 import time
 import scipy.stats as sstats
 import cPickle as pkl
-import dbutils 
 import get_code_ver as codever
 import multiprocessing
-
-import os
+import sys, os
 from os.path import expanduser, sep
 sys.path.append(expanduser("~") + sep + "modules")
-
 from helpers.DBUtilsClass import Connection
 
 class Baseline:
