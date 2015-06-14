@@ -34,7 +34,6 @@ if __name__=="__main__":
     gammas.insert(0,np.ones(layers[0]))
     learnrate=0.1
 
-
     # weights=[np.random.uniform(-1.,1.,[x,y])
     #         for x,y in zip(layers[:-1],layers[1:])]
     # bias=[np.random.uniform(-1.,1.,x) for x in layers[1:]]
@@ -50,7 +49,7 @@ if __name__=="__main__":
     data['testing_index']=idx_test
     data['gammas']=gammas
     data['learnrate']=learnrate
-    data['stop_at']=0.92  # once accuracy reaches this level stop the run.
+    data['stop_at']=1  # once accuracy reaches this level stop the run.
     
     with open('initial_conf.pickle','wb') as fout:
         pkl.dump(data,fout,protocol=-1)

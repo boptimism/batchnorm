@@ -33,6 +33,7 @@ def run_baseline(params={}):
     weights=data['weights']
     bias=data['bias']
     learnrate=data['learnrate']
+    stop_at=data['stop_at']
 
     test_check=bool(data['test_check'])
     train_check=bool(data['train_check'])
@@ -41,13 +42,13 @@ def run_baseline(params={}):
 
     num_of_trains=len(train_input)
     num_of_tests=len(test_input)
-    
+
     batchsize=60
     epochs=50
 
     
     network=bl.Baseline(layers,learnrate,batchsize,epochs,num_of_trains,num_of_tests,
-                        weights,bias,dbrec=dbrec,comment=data['comment'])
+                        weights,bias,dbrec=dbrec,stop_at=stop_at,comment=data['comment'])
 
     network.sgd(train_input,train_label,test_input,test_label,
                 test_check=test_check,train_check=train_check)

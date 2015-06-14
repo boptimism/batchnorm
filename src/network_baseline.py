@@ -6,10 +6,16 @@ import mysql.connector as sqlconn
 import dbutils 
 import get_code_ver as codever
 import multiprocessing
-from DBUtilsClass import Connection
+
+import os
+from os.path import expanduser, sep
+sys.path.append(expanduser("~") + sep + "modules")
+
+from helpers.DBUtilsClass import Connection
+
 class Baseline:
     def __init__(self,layers,learnrate,batchsize,epochs,num_trains,num_tests,
-                 weights,bias,comment='',dbrec=0):
+                 weights,bias,stop_at=1,comment='',dbrec=0):
         
         self.layers=layers
         self.learnrate=learnrate
@@ -17,6 +23,7 @@ class Baseline:
         self.epochs=epochs
         self.weights=weights
         self.bias=bias
+        self.stop_at=stop_at
         
         self.us=[np.zeros([batchsize,l]) for l in self.layers]
         self.ys=[np.zeros([batchsize,l]) for l in self.layers]
@@ -161,6 +168,8 @@ class Baseline:
                 self.train_accu.append(-1.0)
                 self.train_cost.append(-1.0)
 
+
+
             tend=time.clock()                
 
             if self.dbrec:
@@ -168,7 +177,12 @@ class Baseline:
                 self.con.call(sqlstr.format(epochid, self.train_accu[-1],self.train_cost[-1],self.test_accu[-1], self.test_cost[-1],tend-tstart))
 
             print "Epoch {0} completed. Time:{1}".format(p,tend-tstart)
-
+            try: 
+                if self.test_accu[-1]>self.stop_at:
+                    return
+            except:
+                if p==0:
+                    print "Need test_check enabled to use stop_at"
 
     def feedforward(self,batch_data):
         self.us[0]=batch_data
