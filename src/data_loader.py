@@ -5,6 +5,10 @@ load data
 import numpy as np
 import gzip
 import struct
+import sys, os
+from os.path import expanduser, sep
+
+MNIST_PATH = expanduser("~") + sep + "modules" + sep + "MNIST" + sep
 
 """
 Read in the training and test sets.
@@ -14,13 +18,13 @@ training of NN. Instead, these values are normalized to 1.
 """
 
 def training_load():
-    with gzip.open('../MNIST/train-images-idx3-ubyte.gz','rb') as fp:
+    with gzip.open(MNIST_PATH + 'train-images-idx3-ubyte.gz','rb') as fp:
         header=fp.read(16)
         mgn,nimg,nrow,ncol=struct.unpack('>llll',header)
         data=np.fromstring(fp.read(),dtype='uint8')
     fp.close()
     train_img=np.reshape(data.astype(float)/255,(nimg,ncol*nrow))
-    with gzip.open('../MNIST/train-labels-idx1-ubyte.gz','rb') as fp:
+    with gzip.open(MNIST_PATH + 'train-labels-idx1-ubyte.gz','rb') as fp:
         header=fp.read(8)
         mgn,nimg=struct.unpack('>ll',header)
         data=np.fromstring(fp.read(),dtype='uint8')
@@ -31,13 +35,13 @@ def training_load():
     return (train_img,train_label)
 
 def test_load():
-    with gzip.open('../MNIST/t10k-images-idx3-ubyte.gz','rb') as fp:
+    with gzip.open(MNIST_PATH + 't10k-images-idx3-ubyte.gz','rb') as fp:
         header=fp.read(16)
         mgn,nimg,nrow,ncol=struct.unpack('>llll',header)
         data=np.fromstring(fp.read(),dtype='uint8')
     fp.close()
     test_img=np.reshape(data.astype(float)/255,(nimg,ncol*nrow))
-    with gzip.open('../MNIST/t10k-labels-idx1-ubyte.gz','rb') as fp:
+    with gzip.open(MNIST_PATH + 't10k-labels-idx1-ubyte.gz','rb') as fp:
         header=fp.read(8)
         mgn,nimg=struct.unpack('>ll',header)
         data=np.fromstring(fp.read(),dtype='uint8')
