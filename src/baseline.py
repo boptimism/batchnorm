@@ -4,7 +4,11 @@ Baseline
 import data_loader as dl
 import network_baseline as bl
 import numpy as np
-import matplotlib.pyplot as plt
+try: 
+    import matplotlib.pyplot as plt
+    canplot = True
+except:
+    canplot = False
 import cPickle as pkl
 import sys
 import argparse
@@ -65,7 +69,7 @@ def run_baseline(params={}):
         print test_accu
         #--------------------------------
 
-        if plot_flag:
+        if plot_flag and canplot:
             xaxis=np.arange(epochs)
 
             fig=plt.figure(1)
@@ -91,7 +95,7 @@ def run_baseline(params={}):
         print 'accuracy:'
         print accu_train
         #--------------------------------
-        if plot_flag:
+        if plot_flag and canplot:
             xaxis=np.arange(epochs)
             
             fig=plt.figure(2)
