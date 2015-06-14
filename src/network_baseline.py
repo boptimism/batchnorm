@@ -227,6 +227,9 @@ class Baseline:
         cost=costFn(labels_inf,test_labels)
         labels_inf=[np.argmax(x) for x in labels_inf]
         hits=sum(labels_inf==labels)*1./len(test_inputs)
+        if cost>1e30:
+            cost=1e30
+
         return hits,cost
         
 def costFn(labels_inf,labels):
