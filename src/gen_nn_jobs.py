@@ -6,30 +6,51 @@ sys.path.append(expanduser("~") + "/modules/PyScheduler/src")
 from addjob import jobScheduler
 
 
+def normHigh(layers):
+	weights=[
+		np.random.randn(x,y)*np.sqrt(x) 
+		for x,y in zip(layers[:-1],layers[1:])
+	]
+	return weights	
+
+def normMed(layers):
+	weights=[
+		np.random.randn(x,y) 
+		for x,y in zip(layers[:-1],layers[1:])
+	]	
+	return weights	
+
 def normLow(layers):
 	weights=[
 		np.random.randn(x,y)/np.sqrt(x) 
 		for x,y in zip(layers[:-1],layers[1:])
 	]
+	return weights	
 
 
-def normHigh(layers):
+def uniMed(layers):
 	weights=[
-		np.random.randn(x,y) 
+		np.random.uniform(-np.sqrt(3),np.sqrt(3.),[x,y])
 		for x,y in zip(layers[:-1],layers[1:])
-	]	
-
+	]
+	return weights	
 
 def uniHigh(layers):
-	weights=[np.random.uniform(-np.sqrt(3),np.sqrt(3),[x,y])
-			 for x,y in zip(layers[:-1],layers[1:])]	
+	bw = 1.7322
+	weights=[
+		np.random.uniform(-bw,bw,[x,y])*np.sqrt(x)
+		for x,y in zip(layers[:-1],layers[1:])
+	]	
+	return weights
+
 
 def uniLow(layers):
 	bw = 1.7322
-	weights=[np.random.uniform(-bw,bw,[x,y])/np.sqrt(x)
-			 for x,y in zip(layers[:-1],layers[1:])]	
-
-
+	weights=[
+		np.random.uniform(-bw,bw,[x,y])/np.sqrt(x)
+		for x,y in zip(layers[:-1],layers[1:])
+	]	
+	return weights
 
 
 if __name__ == "__main__":
@@ -38,12 +59,12 @@ if __name__ == "__main__":
 
 	learning_rate_list = 0.01 * (2 ** np.arange(12))
 	weight_func = {
-		'uni':{'low':uniLow, 'high':uniHigh}, 
-		'norm':{'low':normLow, 'high':normHigh}
+		'uni':{'low':uniLow, 'med':uniMed,'high':uniHigh}, 
+		'norm':{'low':normLow, 'med':uniMed ,'high':normHigh}
 	}
 
 	dist_type = ('uni','norm')
-	dist_var  = ('low', 'high')
+	dist_var  = ('low',)
 	
 	repeats = 4
 
@@ -65,13 +86,18 @@ if __name__ == "__main__":
 					}
 					data['learnrate']=lr
 					data['weights']=W
+					cmt = 'learning rate: {0}, dist_type: {1}, dist_var: {2}, repeat: {3}'.format(lr,dt,dv,rx+1)
+					data['comment']=cmt
 					allinp.append(data)
-					comment.append('learning rate: {0}, dist_type: {1}, dist_var: {2}, repeat: {3}'.format(lr,dt,dv,rx+1))
+					comment.append(cmt)
 
-#	only the baseline network is ready to write to the DB. others need work, so we start with this.
 
-	func_names = ('run_baseline','run_rbn')
-	mod_names = ('baseline','reduced_BN')
+	# func_names = ('run_baseline','run_rbn')
+	# mod_names = ('baseline','reduced_BN')
+
+	func_names = ('run_baseline','run_batchnorm')
+	mod_names = ('baseline','bn_v0')
+
 	js = jobScheduler()
 
 	for mn,fn in zip(mod_names[1], func_names[1]):
