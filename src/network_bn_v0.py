@@ -170,9 +170,20 @@ class BNv0:
                 self.train_cost.append(cost)
                     
             tend=time.clock()
+            if self.dbrec:
+                sqlstr = 'update_epoch_accuracy({0},{1},{2},{3},{4},{5})'           
+                self.con.call(sqlstr.format(epochid, self.train_accu[-1],self.train_cost[-1],self.test_accu[-1], self.test_cost[-1],tend-tstart))
+
             
             print "Epoch {0} completed. Time:{1}".format(p,tend-tstart)
+            try: 
+                if self.test_accu[-1]>self.stop_at:
+                    return
+            except:
+                if p==0:
+                    print "Need test_check enabled to use stop_at"
 
+            
     def feedforward(self,batch_data):
         eps=1.e-15
         self.us[0]=batch_data
