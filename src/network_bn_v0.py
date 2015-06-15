@@ -14,7 +14,7 @@ from helpers.DBUtilsClass import Connection
 from random import random
 
 class BNv0:
-    def __init__(self,layers,learnrate,batchsize,epochs,weights,bias,gammas,stop_at=1,comment='',dbrec=0):
+    def __init__(self,layers,learnrate,batchsize,epochs,num_trains,num_tests,weights,bias,gammas,stop_at=1,comment='',dbrec=0):
 
         self.layers=layers
         self.learnrate=learnrate
