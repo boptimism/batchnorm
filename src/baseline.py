@@ -68,8 +68,6 @@ def run_baseline(params={}):
     network.sgd(train_input,train_label,test_input,test_label,
                 test_check=test_check,train_check=train_check)
 
-
-    
     #------------------------------------------
     if test_check:
         test_accu=np.array(network.test_accu)

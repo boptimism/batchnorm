@@ -6,7 +6,7 @@ import get_code_ver as codever
 import multiprocessing
 import sys, os
 from os.path import expanduser, sep
-sys.path.append(expanduser("~") + sep + "modules")
+sys.path.append(expanduser("~") + sep)# + "modules")
 from helpers.DBUtilsClass import Connection
 from random import random
 
@@ -160,8 +160,6 @@ class Baseline:
             else:
                 self.train_accu.append(-1.0)
                 self.train_cost.append(-1.0)
-
-
 
             tend=time.clock()                
 

@@ -49,10 +49,10 @@ if __name__=="__main__":
     data['testing_index']=idx_test
     data['gammas']=gammas
     data['learnrate']=learnrate
-    data['stop_at']=1  # once accuracy reaches this level stop the run.
-    data['train_check']=True
+    data['stop_at']=0.9  # once accuracy reaches this level stop the run.
+    data['train_check']=False
     data['test_check']=True
-    data['save_file']=True
+    data['save_file']=False
     data['dbrec']=1
 
     with open('initial_conf.pickle','wb') as fout:

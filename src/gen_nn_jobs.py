@@ -30,7 +30,7 @@ def normLow(layers):
 
 def uniMed(layers):
 	weights=[
-		np.random.uniform(-1.7322,1.7322,[x,y])
+		np.random.uniform(-np.sqrt(3),np.sqrt(3.),[x,y])
 		for x,y in zip(layers[:-1],layers[1:])
 	]
 	return weights	
@@ -92,10 +92,15 @@ if __name__ == "__main__":
 					comment.append(cmt)
 
 
+	# func_names = ('run_baseline','run_rbn')
+	# mod_names = ('baseline','reduced_BN')
+
 	func_names = ('run_baseline','run_batchnorm')
 	mod_names = ('baseline','bn_v0')
+
 	js = jobScheduler()
 
-	for mn,fn in zip(mod_names, func_names):
-		js.addJobs('jerlich@nyu.edu','batchnorm.' + mn,fn,allinp,comment)
+	for mn,fn in zip(mod_names[1], func_names[1]):
+		#js.addJobs('jerlich@nyu.edu','batchnorm.' + mn,fn,allinp,comment)
+                js.addJobs('bz16@nyu.edu','rbn.'+mn,fn,allinp,comment)
 		
