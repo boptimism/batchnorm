@@ -164,10 +164,16 @@ class BNv0:
                 accu,cost=self.inference(test_inputs,test_labels)
                 self.test_accu.append(accu)
                 self.test_cost.append(cost)
+            else:
+                self.test_accu.append(-1.0)
+                self.test_cost.append(-1.0)
             if train_check:
                 accu,cost=self.inference(train_inputs,train_labels)
                 self.train_accu.append(accu)
                 self.train_cost.append(cost)
+            else:
+                self.train_accu.append(-1.0)
+                self.train_cost.append(-1.0)
                     
             tend=time.clock()
             if self.dbrec:
@@ -183,7 +189,7 @@ class BNv0:
                 if p==0:
                     print "Need test_check enabled to use stop_at"
 
-            
+
     def feedforward(self,batch_data):
         eps=1.e-15
         self.us[0]=batch_data
