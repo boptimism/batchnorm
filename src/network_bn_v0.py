@@ -3,9 +3,18 @@ BN-V0
 """
 import numpy as np
 import time
+import scipy.stats as sstats
+import cPickle as pkl
+import get_code_ver as codever
+import multiprocessing
+import sys, os
+from os.path import expanduser, sep
+sys.path.append(expanduser("~") + sep + "modules")
+from helpers.DBUtilsClass import Connection
+from random import random
 
 class BNv0:
-    def __init__(self,layers,learnrate,batchsize,epochs,weights,bias,gammas):
+    def __init__(self,layers,learnrate,batchsize,epochs,weights,bias,gammas,stop_at=1,comment='',dbrec=0):
 
         self.layers=layers
         self.learnrate=learnrate
@@ -14,6 +23,8 @@ class BNv0:
         self.weights=weights
         self.bias=bias
         self.gammas=gammas
+        self.stop_at=stop_at
+
         
         self.us=[np.zeros([batchsize,l]) for l in self.layers]
         self.xhats=[np.zeros([batchsize,l]) for l in self.layers]
@@ -29,6 +40,27 @@ class BNv0:
         self.test_cost=[]
         self.train_accu=[]
         self.train_cost=[]
+        self.dbrec=dbrec
+
+        if self.dbrec:
+            self.con=Connection()
+            self.con.use('ann3')
+
+            rec_runs={'neural_network_type':'bn_v0',
+                      'layers':str(self.layers),
+                      'database':'MNIST',
+                      'learning_rate_i':0.0,
+                      'learning_rate':self.learnrate,
+                      'batch_size':self.batchsize,
+                      'total_epochs':self.epochs,
+                      'train_size':num_trains,
+                      'test_size':num_tests,
+                      'code_file':'bn_v0.py',
+                      'code_version':codever.git_version(),
+                      'comment':comment}
+            #self.con=self.connect()
+            self.con.saveToDB('runs',rec_runs)
+            self.runid = self.con.lastInsertID()
         
     def sgd(self,train_inputs,train_labels,test_inputs,test_labels,
             test_check=True,train_check=False):
@@ -37,11 +69,19 @@ class BNv0:
         batch_per_epoch=num_of_trains/self.batchsize
         idx_epoch=np.arange(num_of_trains)
         
+
         for p in np.arange(self.epochs):
             tstart=time.clock()
             np.random.shuffle(idx_epoch)
+            if self.dbrec:
+                rec_epochs={'num':int(p),'runid':self.runid}
+                self.con.saveToDB('epochs',rec_epochs)
+                epochid = self.con.lastInsertID()
+                self.con.saveToDB('epochdata',{'epochid':epochid, 'permidx':idx_epoch})
+
 
             for q in np.arange(batch_per_epoch):
+                ts=time.clock()
                 idx_batch=idx_epoch[q*self.batchsize:(q+1)*self.batchsize]
                 batch_data=train_inputs[idx_batch]
                 batch_label=train_labels[idx_batch]
@@ -51,6 +91,71 @@ class BNv0:
                 dw,db,dg=self.bp(batch_label)
                 
                 self.batch_update(dw,db,dg)
+                te=time.clock()
+
+                if self.dbrec and ((p==0 and (random()<0.15 or q<100)) or random()<0.02) :
+
+                    accu,cost=self.inference(test_inputs,test_labels)
+
+                    rec_batches={'num':int(q),
+                                 'epochid':epochid,
+                                 'runid':self.runid,
+                                 'runtime':te-ts,
+                                 'acc': float(accu),
+                                 'cost': float(cost)}
+                    self.con.saveToDB('minibatches',rec_batches)
+                    mbid = self.con.lastInsertID()
+
+
+                   
+                    if self.dbrec>1:
+                    
+                        w_mu=[np.mean(self.weights[i-1],0) for i,x in enumerate(self.layers)]
+                        w_sig=[np.std(self.weights[i-1],0) for i,x in enumerate(self.layers)]
+                        b_mu=[np.mean(self.bias[i-1]) for i,x in enumerate(self.layers)]
+                        b_sig=[np.std(self.bias[i-1]) for i,x in enumerate(self.layers)]
+                        g_mu=[np.mean(self.gammas[i-1]) for i,x in enumerate(self.layers)]
+                        g_sig=[np.std(self.gammas[i-1]) for i,x in enumerate(self.layers)]
+                        
+                        err_mu=[np.mean(delta_s,0) for delta_s in self.deltas]
+                        err_sig=[np.std(delta_s,0) for delta_s in self.deltas]
+                        err_skew=[sstats.skew(delta_s,0) for delta_s in self.deltas]
+                        err_kurtosis=[sstats.kurtosis(delta_s,0) for delta_s in self.deltas]
+                        act_mu=[np.mean(u_s,0) for u_s in self.us]
+                        act_sig=[np.std(u_s,0) for u_s in self.us]
+                        act_skew=[sstats.skew(u_s,0) for u_s in self.us]
+                        act_kurtosis=[sstats.kurtosis(u_s,0) for u_s in self.us]
+                
+                        rec_params={'W_mu':pkl.dumps(w_mu),
+                                    'W_sig':pkl.dumps(w_sig),
+                                    'bias_mu':pkl.dumps(b_mu),
+                                    'bias_sig':pkl.dumps(b_sig),
+                                    'gamma_mu':pkl.dumps(b_mu),
+                                    'gamma_sig':pkl.dumps(b_sig),
+                                    'mbid':mbid}
+                        # self.con.saveToDB('mbparams',rec_params)
+                        # this table is not made 
+
+                        rec_samples={'error_mu':pkl.dumps(err_mu),
+                                     'error_sig':pkl.dumps(err_sig),
+                                     'error_skew':pkl.dumps(err_skew),
+                                     'error_kurtosis':pkl.dumps(err_kurtosis),
+                                     'activation_mu':pkl.dumps(act_mu),
+                                     'activation_sig':pkl.dumps(act_sig),
+                                     'activation_skew':pkl.dumps(act_skew),
+                                     'activation_kurtosis':pkl.dumps(act_kurtosis),
+                                     'mbid':mbid}
+                    
+                        self.con.saveToDB('mbsamples',rec_samples)
+
+                        rec_mbdata={'mbid':mbid,
+                                    'W':pkl.dumps(self.weights),
+                                    'bias':pkl.dumps(self.bias),
+                                    'error':pkl.dumps(self.deltas),
+                                    'activation':pkl.dumps(self.us)}
+                    
+                        #self.con.saveToDB('mb_data',rec_mbdata)
+
 
             if test_check:
                 bs_inf=60
@@ -170,7 +275,8 @@ class BNv0:
         label_inf=np.array([np.argmax(s) for s in us_inf])
         label_giv=np.array([np.argmax(s) for s in test_labels])
         hits=sum(label_inf==label_giv)*1./len(test_inputs)
-        
+        if cost>1e30:
+            cost=1e30
         return hits,cost
         
 def costFn(labels_inf,labels):

@@ -49,12 +49,8 @@ class Baseline:
                       'code_file':'baseline.py',
                       'code_version':codever.git_version(),
                       'comment':comment}
-            #self.con=self.connect()
             self.con.saveToDB('runs',rec_runs)
             self.runid = self.con.lastInsertID()
-     
-    def connect(self):
-        return self.con
             
     def sgd(self,train_inputs,train_labels,test_inputs,test_labels,
             test_check=True,train_check=False):
@@ -65,16 +61,14 @@ class Baseline:
         
         for p in np.arange(self.epochs):
             # For each epoch
-
+            tstart=time.clock()
+            np.random.shuffle(idx_epoch)
             # SQL--------------------------------------
             if self.dbrec:
                 rec_epochs={'num':int(p),'runid':self.runid}
-
                 self.con.saveToDB('epochs',rec_epochs)
                 epochid = self.con.lastInsertID()
-
-            tstart=time.clock()
-            np.random.shuffle(idx_epoch)
+                self.con.saveToDB('epochdata',{'epochid':epochid, 'permidx':idx_epoch})
 
             for q in np.arange(batch_per_epoch):
                 # For each batch
@@ -93,7 +87,7 @@ class Baseline:
 
                 te=time.clock()
 
-                if self.dbrec and (p==0) and (random()<0.15 or q<100):
+                if self.dbrec and ((p==0 and (random()<0.15 or q<100)) or random()<0.02):
 
                     accu,cost=self.inference(test_inputs,test_labels)
 
@@ -128,8 +122,9 @@ class Baseline:
                                     'bias_mu':pkl.dumps(b_mu),
                                     'bias_sig':pkl.dumps(b_sig),
                                     'mbid':mbid}
-                        self.con.saveToDB('mbparams',rec_params)
-                                
+                        # self.con.saveToDB('mbparams',rec_params)
+                        # This tables doesn't exist.
+
                         rec_samples={'error_mu':pkl.dumps(err_mu),
                                      'error_sig':pkl.dumps(err_sig),
                                      'error_skew':pkl.dumps(err_skew),
@@ -148,7 +143,7 @@ class Baseline:
                                     'error':pkl.dumps(self.deltas),
                                     'activation':pkl.dumps(self.us)}
                     
-                        self.con.saveToDB('mb_data',rec_mbdata)
+                      #  self.con.saveToDB('mb_data',rec_mbdata)
 
                 
             if test_check:
