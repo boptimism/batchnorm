@@ -11,23 +11,30 @@ def normLow(layers):
 		np.random.randn(x,y)*np.sqrt(x) 
 		for x,y in zip(layers[:-1],layers[1:])
 	]
+	return weights	
 
 def normHigh(layers):
 	weights=[
 		np.random.randn(x,y) 
 		for x,y in zip(layers[:-1],layers[1:])
 	]	
+	return weights	
 
 
 def uniHigh(layers):
-	weights=[np.random.uniform(-1.7322,1.7322,[x,y])
-			 for x,y in zip(layers[:-1],layers[1:])]	
+	weights=[
+		np.random.uniform(-1.7322,1.7322,[x,y])
+		for x,y in zip(layers[:-1],layers[1:])
+	]
+	return weights	
 
 def uniLow(layers):
 	bw = 1.7322
-	weights=[np.random.uniform(-bw,bw,[x,y])*np.sqrt(x)
-			 for x,y in zip(layers[:-1],layers[1:])]	
-
+	weights=[
+		np.random.uniform(-bw,bw,[x,y])*np.sqrt(x)
+		for x,y in zip(layers[:-1],layers[1:])
+	]	
+	return weights
 
 
 
@@ -64,8 +71,10 @@ if __name__ == "__main__":
 					}
 					data['learnrate']=lr
 					data['weights']=W
+					cmt = 'learning rate: {0}, dist_type: {1}, dist_var: {2}, repeat: {3}'.format(lr,dt,dv,rx+1)
+					data['comment']=cmt
 					allinp.append(data)
-					comment.append('learning rate: {0}, dist_type: {1}, dist_var: {2}, repeat: {3}'.format(lr,dt,dv,rx+1))
+					comment.append(cmt)
 
 #	only the baseline network is ready to write to the DB. others need work, so we start with this.
 
