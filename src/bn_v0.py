@@ -137,7 +137,7 @@ def run_batchnorm(params={}):
         with open("../results/bnv0_accuracy.pickle",'w') as frec:
             pkl.dump(data,frec)
 
-
+    return 0
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description='Learn mNIST with batchnorm backprop')

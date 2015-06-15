@@ -64,7 +64,7 @@ if __name__ == "__main__":
 	}
 
 	dist_type = ('uni','norm')
-	dist_var  = ('low',)
+	dist_var  = ('low','med','high')
 	
 	repeats = 4
 

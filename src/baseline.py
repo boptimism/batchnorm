@@ -137,7 +137,7 @@ def run_baseline(params={}):
           }
         with open("../results/baseline_accuracy.pickle",'w') as frec:
             pkl.dump(data,frec)
-
+    return 0
 
 if __name__=="__main__":
 
