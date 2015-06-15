@@ -132,6 +132,8 @@ def run_rbn(params={}):
         with open("../results/bnv1_accuracy.pickle",'w') as frec:
             pkl.dump(data,frec)
 
+    return 0
+
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description='Learn mNIST with baseline backprop')
     parser.add_argument('--lr', dest='learnrate', type=float, default=0.1,

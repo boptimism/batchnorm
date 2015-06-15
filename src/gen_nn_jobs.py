@@ -95,8 +95,8 @@ if __name__ == "__main__":
 	# func_names = ('run_baseline','run_rbn')
 	# mod_names = ('baseline','reduced_BN')
 
-	func_names = ('run_baseline','run_batchnorm')
-	mod_names = ('baseline','bn_v0')
+	func_names = ('run_baseline','run_batchnorm','run_rbn')
+	mod_names = ('baseline','bn_v0','bn_v1')
 
 	js = jobScheduler()
 
