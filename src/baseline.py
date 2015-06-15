@@ -69,9 +69,7 @@ def run_baseline(params={}):
                 test_check=test_check,train_check=train_check)
 
 
-    test_check=data['test_check']
-    train_check=data['train_check']
-    save_file=data['save_file']
+    
     #------------------------------------------
     if test_check:
         test_accu=np.array(network.test_accu)

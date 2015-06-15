@@ -60,8 +60,11 @@ def run_batchnorm(params={}):
     batchsize=60
     epochs=50
 
-    test_check=True
-    train_check=False
+    try:
+        cmt=data['comment']
+    except:
+        cmt=''
+
     
     network=bnv0.BNv0(layers,learnrate,batchsize,epochs,weights,bias,gammas,dbrec=dbrec,stop_at=stop_at,comment=cmt)
 
