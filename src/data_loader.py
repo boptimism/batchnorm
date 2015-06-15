@@ -7,8 +7,9 @@ import gzip
 import struct
 import sys, os
 from os.path import expanduser, sep
+#MNIST_PATH = expanduser("~") + sep + "modules" + sep + "MNIST" + sep
+MNIST_PATH = expanduser("~") + sep + "Projects" + sep + "BatchNorm" + sep + "MNIST" + sep
 
-MNIST_PATH = expanduser("~") + sep + "modules" + sep + "MNIST" + sep
 
 """
 Read in the training and test sets.
