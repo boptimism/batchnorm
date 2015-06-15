@@ -77,7 +77,7 @@ class BNv0:
                 rec_epochs={'num':int(p),'runid':self.runid}
                 self.con.saveToDB('epochs',rec_epochs)
                 epochid = self.con.lastInsertID()
-                self.con.saveToDB('epochdata',{'epochid':epochid, 'permidx':idx_epoch})
+                self.con.saveToDB('epochdata',{'epochid':epochid, 'permidx':pkl.dumps(idx_epoch)})
 
 
             for q in np.arange(batch_per_epoch):
