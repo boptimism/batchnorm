@@ -2,8 +2,8 @@ import numpy as np
 import sys
 import os
 from os.path import expanduser, sep
-sys.path.append(expanduser("~") + "/modules/PyScheduler/src")
-from addjob import jobScheduler
+sys.path.append(expanduser("~") + "/modules")
+from PyScheduler.addjob import jobScheduler
 
 
 def normHigh(layers):
@@ -100,7 +100,7 @@ if __name__ == "__main__":
 
 	js = jobScheduler()
 
-	for mn,fn in zip(mod_names[1], func_names[1]):
-		#js.addJobs('jerlich@nyu.edu','batchnorm.' + mn,fn,allinp,comment)
-                js.addJobs('bz16@nyu.edu','rbn.'+mn,fn,allinp,comment)
+	for mn,fn in zip(mod_names, func_names):
+		js.addJobs('jerlich@nyu.edu','batchnorm.' + mn,fn,allinp,comment)
+         #       js.addJobs('bz16@nyu.edu','rbn.'+mn,fn,allinp,comment)
 		
