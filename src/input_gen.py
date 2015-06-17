@@ -7,7 +7,7 @@ import numpy as np
 import cPickle as pkl
 import random as rnd
 
-def inputs_gen(args):
+def inputs_gen():
 
     input_data=[]
     
@@ -23,8 +23,8 @@ def inputs_gen(args):
     idx_test=np.array(rnd.sample(range(totaltest),numoftests))
 
     layers=[28*28,100,100,100,10]
-    ubd=1.
-    lbd=-1.
+    ubd=np.sqrt(3.)
+    lbd=-np.sqrt(3.)
     weights=[np.random.uniform(lbd,ubd,[x,y])
              for x,y in zip(layers[:-1],layers[1:])]
     bias=[np.random.uniform(lbd,ubd,x) for x in layers[1:]]
@@ -48,9 +48,6 @@ def inputs_gen(args):
     data['train_check']=False
     data['init']='constVar1'
     data['lrate_decay']=0.0
-    
-    for arg in args:
-        data['learnrate']=arg
-        input_data.append(pkl.dumps(data))
-
-    return input_data
+    data['lrate']=0.1
+ 
+    return pkl.dumps(data)

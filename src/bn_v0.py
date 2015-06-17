@@ -7,15 +7,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cPickle as pkl
 import sys
+from input_gen import inputs_gen
 
 if __name__=="__main__":
 
     t_img,t_label=dl.training_load()
     s_img,s_label=dl.test_load()
 
-    with open('initial_conf.pickle','rb') as f_init:
-        data=pkl.load(f_init)
-
+    data=pkl.loads(inputs_gen())
+    
     training_index=data['training_index']
     testing_index=data['testing_index']
     train_input=np.array(t_img[training_index])
@@ -31,7 +31,7 @@ if __name__=="__main__":
     num_of_trains=len(train_input)
     num_of_tests=len(test_input)
     
-    learnrate=data['learnrate']
+    learnrate=data['lrate']
     lrate_decay=data['lrate_decay']
     batchsize=data['batchsize']
     epochs=data['epochs']
@@ -81,7 +81,7 @@ if __name__=="__main__":
         plt.ylabel('Loss')
         plt.xlabel('Epochs')
 
-        plt.savefig('../results/bnv0_TestSet.png')
+        # plt.savefig('../results/bnv0_TestSet.png') 
         plt.show()
 
     if train_check:
@@ -107,10 +107,10 @@ if __name__=="__main__":
         plt.grid()
         plt.ylabel('Loss')
         plt.xlabel('Epochs')
-
-        plt.savefig('../results/bnv0_TrainSet.png')
+ 
+        # plt.savefig('../results/bnv0_TrainSet.png')
         plt.show()
 
-    if test_check or train_check:
-        with open("../results/bnv0_accuracy.pickle",'w') as frec:
-            pkl.dump(data,frec)
+    # if test_check or train_check:
+    #     with open("../results/bnv0_accuracy.pickle",'w') as frec:
+    #         pkl.dump(data,frec)
